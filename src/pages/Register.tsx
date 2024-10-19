@@ -11,7 +11,7 @@ const Register: React.FC = () => {
     };
 
     return (
-        <Container maxWidth="sm">
+        <Container>
             <Typography variant="h4" component="h1" gutterBottom>Register</Typography>
             <TextField
                 label="Email"
