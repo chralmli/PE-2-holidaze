@@ -7,15 +7,21 @@ import IconButton from '@mui/material/IconButton';
 import MenuIcon from '@mui/icons-material/Menu';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
-import LoginIcon from '@mui/icons-material/Login';
+
+import { useAuth } from '../context/AuthContext';
 
 const Header: React.FC = () => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+    const { isLoggedIn, logout } = useAuth();
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
@@ -27,50 +33,84 @@ const Header: React.FC = () => {
 
   return (
     <AppBar position="static" sx={{ backgroundColor: '#204051' }}>
-      <Toolbar>
-        <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontSize: '20px', fontFamily: 'poppins', color: '#e0f7fa' }}>
-          holidaze
-        </Typography>
-        {isMobile ? (
-            <>
-                <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleMenuOpen}>
-                    <MenuIcon />
-                </IconButton>
-                <Menu
-                    anchorEl={anchorEl}
-                    open={Boolean(anchorEl)}
-                    onClose={handleMenuClose}
-                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                    transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-                >
-                    <MenuItem onClick={handleMenuClose} component={Link} to="/">Home</MenuItem>
-                    <MenuItem onClick={handleMenuClose} component={Link} to="/venues">Venues</MenuItem>
-                    <MenuItem onClick={handleMenuClose} component={Link} to="/login">
-                        <IconButton color="inherit">
-                            <LoginIcon />
-                            <Typography variant="button" ml={1}>Login</Typography>
-                        </IconButton>
-                    </MenuItem>
+        <Toolbar>
+            <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontSize: '20px', fontFamily: 'poppins', color: '#e0f7fa' }}>
+            holidaze
+            </Typography>
+            {isMobile ? (
+                <>
+                    <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleMenuOpen}>
+                        <MenuIcon />
+                    </IconButton>
+                    <Menu
+                        id="menu"
+                        anchorEl={anchorEl}
+                        open={Boolean(anchorEl)}
+                        onClose={handleMenuClose}
+                        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    >
+                        <MenuItem onClick={handleMenuClose} component={Link} to="/">Home</MenuItem>
+                        <MenuItem onClick={handleMenuClose} component={Link} to="/venues">Venues</MenuItem>
+                        {!isLoggedIn && (
+                            <MenuItem onClick={handleMenuClose} component={Link} to="/register">Register</MenuItem>
+                        )}
+                        {!isLoggedIn && (
+                            <MenuItem onClick={handleMenuClose} component={Link} to="/login">Login</MenuItem>
+                        )} 
+                        {isLoggedIn && ( // Show logout only when logged in
+                            <MenuItem onClick={() =>  { handleMenuClose(); logout(); }}>Logout</MenuItem>
+                        )}
+                        <Box sx={{ width: '100%', height: '1px', backgroundColor: '#e0e0e0', my: 1 }} />
+                        <MenuItem onClick={handleMenuClose} component={Link} to="/post-accommodation">Post your own accommodation</MenuItem>  
+                    </Menu>
+                </>
+            ) : (
+                <>
+                    <Button color="inherit" component={Link} to="/" sx={{ color: '#e0f7fa', marginLeft: '16px' }}>Home</Button>
+                    <Button color="inherit" component={Link} to="/venues" sx={{ color: '#e0f7fa', marginLeft: '16px' }}>Venues</Button>
+                    
+                    <Button
+                        sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            border: '1px solid #e0e0e0',
+                            borderRadius: '50px', 
+                            padding: ' 6px 12px',
+                            color: '#e0f7fa',
+                            '&:hover': {
+                                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                                backgroundColor: '#455a64'
+                            }
+                        }}
+                        onClick={handleMenuOpen}
+                    >
+                        <MenuIcon sx={{ marginRight: '8px' }} />
+                        <Avatar sx={{ bgcolor: '#26c6da', width: 32, height: 32 }} />
+                    </Button>
 
-                </Menu>
-            </>
-        ) : (
-            <>
-                <Button color="inherit" component={Link} to="/" sx={{ color: '#e0f7fa' }}>Home</Button>
-                <Button color="inherit" component={Link} to="/venues" sx={{ color: '#e0f7fa', marginRight: '16px' }}>Venues</Button>
-                <Button
-                    variant="contained"
-                    color="secondary"
-                    component={Link}
-                    to="/login"
-                    startIcon={<LoginIcon />}
-                    sx={{ backgroundColor: '#26c6da', color: '#ffffff' }}
-                >
-                    Login
-                </Button>
-            </>
-        )}
-      </Toolbar>
+                    <Menu
+                        anchorEl={anchorEl}
+                        open={Boolean(anchorEl)}
+                        onClose={handleMenuClose}
+                        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    >
+                        {!isLoggedIn && (
+                            <MenuItem onClick={handleMenuClose} component={Link} to="/register">Register</MenuItem>
+                        )}
+                        {!isLoggedIn && (
+                            <MenuItem onClick={handleMenuClose} component={Link} to="/login">Login</MenuItem>
+                        )}
+                        {isLoggedIn && ( // Show logout only when logged in
+                            <MenuItem onClick={() =>  { handleMenuClose(); logout(); }}>Logout</MenuItem>
+                        )}
+                        <Box sx={{ width: '100%', height: '1px', backgroundColor: '#e0e0e0', my: 1 }} />
+                        <MenuItem onClick={handleMenuClose} component={Link} to="/post-accommodation">Post your own accommodation</MenuItem>
+                    </Menu>
+                </>
+            )}
+        </Toolbar>
     </AppBar>
   );
 };

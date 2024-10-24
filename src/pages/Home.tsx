@@ -85,7 +85,7 @@ const Home: React.FC = () => {
                     <Typography 
                         variant="h3" 
                         component="h1" 
-                        mb={10}
+                        mb={8}
                         gutterBottom 
                         sx={{ color: '#ffffff', fontFamily: 'poppins', fontWeight: '600', fontSize: '35px', textAlign: 'left', width: '100%' }}
                     >
