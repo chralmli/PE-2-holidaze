@@ -24,3 +24,7 @@ export type Venue = {
         lng: number;
     };
 };
+
+export type VenueResponse = {
+    data: Venue;
+};
