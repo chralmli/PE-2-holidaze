@@ -1,10 +1,20 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+interface User {
+    name: string;
+    email: string;
+    bio?: string;
+    avatar?: { url: string; alt: string };
+    banner?: { url: string; alt: string };
+    accessToken: string;
+    venueManager?: boolean;
+}
+
 interface AuthContextProps {
     isLoggedIn: boolean;
-    user: any | null;
-    login: (userData: any) => void;
+    user: User | null;
+    login: (userData: User) => void;
     logout: () => void;
 }
 
@@ -20,7 +30,7 @@ const AuthContext = createContext<AuthContextProps>({
 });
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-    const [user, setUser] = useState<any | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const navigate = useNavigate();
 
     // Check localStorage to see if user is already logged in
@@ -32,7 +42,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }, []);
 
     // Login function
-    const login = (userData: any) => {
+    const login = (userData: User) => {
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
     };

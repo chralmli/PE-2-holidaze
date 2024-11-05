@@ -21,7 +21,7 @@ const Header: React.FC = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-    const { isLoggedIn, logout } = useAuth();
+    const { isLoggedIn, user, logout } = useAuth();
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
         setAnchorEl(event.currentTarget);
@@ -30,6 +30,20 @@ const Header: React.FC = () => {
     const handleMenuClose = () => {
         setAnchorEl(null);
     };
+
+    // Create menu items conditionally for logged-in and non-logged-in users
+    const loggedOutMenuItems = [
+        <MenuItem key="register" onClick={handleMenuClose} component={Link} to="/register">Register</MenuItem>,
+        <MenuItem key="login" onClick={handleMenuClose} component={Link} to="/login">Login</MenuItem>,
+    ];
+
+    const loggedInMenuItems = [
+        <MenuItem key="profile" onClick={handleMenuClose} component={Link} to="/profile">Profile</MenuItem>,
+        user?.venueManager && (
+            <MenuItem key="admin" onClick={handleMenuClose} component={Link} to="/admin">Admin Dashboard</MenuItem>
+        ),
+        <MenuItem key="logout" onClick={() => { handleMenuClose(); logout(); }}>Logout</MenuItem>,
+    ];
 
   return (
     <AppBar position="static" sx={{ backgroundColor: '#204051' }}>
@@ -52,14 +66,10 @@ const Header: React.FC = () => {
                     >
                         <MenuItem onClick={handleMenuClose} component={Link} to="/">Home</MenuItem>
                         <MenuItem onClick={handleMenuClose} component={Link} to="/venues">Venues</MenuItem>
-                        {!isLoggedIn && (
-                            <MenuItem onClick={handleMenuClose} component={Link} to="/register">Register</MenuItem>
-                        )}
-                        {!isLoggedIn && (
-                            <MenuItem onClick={handleMenuClose} component={Link} to="/login">Login</MenuItem>
-                        )} 
-                        {isLoggedIn && ( // Show logout only when logged in
-                            <MenuItem onClick={() =>  { handleMenuClose(); logout(); }}>Logout</MenuItem>
+                        {!isLoggedIn ? (
+                            loggedOutMenuItems
+                        ) : (
+                            loggedInMenuItems
                         )}
                         <Box sx={{ width: '100%', height: '1px', backgroundColor: '#e0e0e0', my: 1 }} />
                         <MenuItem onClick={handleMenuClose} component={Link} to="/post-accommodation">Post your own accommodation</MenuItem>  
@@ -70,6 +80,15 @@ const Header: React.FC = () => {
                     <Button color="inherit" component={Link} to="/" sx={{ color: '#e0f7fa', marginLeft: '16px' }}>Home</Button>
                     <Button color="inherit" component={Link} to="/venues" sx={{ color: '#e0f7fa', marginLeft: '16px' }}>Venues</Button>
                     
+                    {isLoggedIn && (
+                        <>
+                            {user?.venueManager && (
+                                <Button color="inherit" component={Link} to="/admin" sx={{ color: '#e0f7fa', marginLeft: '16px' }}>
+                                    Admin Dashboard
+                                </Button>
+                            )}
+                        </>
+                    )}
                     <Button
                         sx={{ 
                             display: 'flex', 
@@ -96,14 +115,10 @@ const Header: React.FC = () => {
                         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
                     >
-                        {!isLoggedIn && (
-                            <MenuItem onClick={handleMenuClose} component={Link} to="/register">Register</MenuItem>
-                        )}
-                        {!isLoggedIn && (
-                            <MenuItem onClick={handleMenuClose} component={Link} to="/login">Login</MenuItem>
-                        )}
-                        {isLoggedIn && ( // Show logout only when logged in
-                            <MenuItem onClick={() =>  { handleMenuClose(); logout(); }}>Logout</MenuItem>
+                        {!isLoggedIn ? (
+                            loggedOutMenuItems      
+                        ) : (
+                            loggedInMenuItems
                         )}
                         <Box sx={{ width: '100%', height: '1px', backgroundColor: '#e0e0e0', my: 1 }} />
                         <MenuItem onClick={handleMenuClose} component={Link} to="/post-accommodation">Post your own accommodation</MenuItem>

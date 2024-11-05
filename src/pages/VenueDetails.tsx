@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { Venue } from '../types/Venue';
 import { getVenueById } from '../services/venueService';
+import BookingForm from '../components/BookingForm';
 import { Box, Typography, Skeleton, Rating } from '@mui/material';
 import WifiIcon from '@mui/icons-material/Wifi';
 import LocalParkingIcon from '@mui/icons-material/LocalParking';
@@ -61,6 +62,16 @@ const VenueDetails: React.FC = () => {
         if (!venue) {
             return <div>Venue not found.</div>;
         }
+
+        // Handle unkown location values
+        const locationString = [
+            venue.location.address || 'Address not available',
+            venue.location.city || 'City not available',
+            venue.location.zip || 'Zip code not available',
+            venue.location.country || 'Country not available',
+        ].filter(Boolean).join(', ');
+
+        const hasValidCoordinates = venue.location.lat !== 0 && venue.location.lng !== 0;
 
         return (
             <VenueDetailsContainer>
@@ -122,11 +133,11 @@ const VenueDetails: React.FC = () => {
                     Location
                 </Typography>
                 <Typography variant="body1">
-                    {venue.location.address}, {venue.location.city}, {venue.location.zip}, {venue.location.country}
+                    {locationString}
                 </Typography>
 
                 {/* Map Section */}
-                {venue.location.lat && venue.location.lng && (
+                {hasValidCoordinates && (
                     <MapContainer
                         center={[venue.location.lat, venue.location.lng]}
                         zoom={13}
@@ -144,6 +155,14 @@ const VenueDetails: React.FC = () => {
                         </Marker>
                     </MapContainer>
                 )}
+                {!hasValidCoordinates && (
+                    <Typography variant="body2" color="text.secondary">
+                        Map information is not available for this venue.
+                    </Typography>
+                )}
+                
+                {/* Booking Form */}
+                <BookingForm venueId={venue.id} />
             </VenueDetailsContainer>
         );
     };
