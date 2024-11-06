@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography } from '@mui/material';
+import { Box, TextField, Button, Typography, Checkbox, FormControlLabel } from '@mui/material';
 import { createVenue } from '../services/venueService';
 
 const CreateVenueForm: React.FC = () => {
@@ -9,6 +9,25 @@ const CreateVenueForm: React.FC = () => {
   const [maxGuests, setMaxGuests] = useState(1);
   const [message, setMessage] = useState<string | null>(null);
 
+  // Location details
+  const [address, setAddress] = useState('');
+  const [city, setCity] = useState('');
+  const [zip, setZip] = useState('');
+  const [country, setCountry] = useState('');
+  const [continent, setContinent] = useState('');
+  const [latitude, setLatitude] = useState(0);
+  const [longitude, setLongitude] = useState(0);
+
+  // Media (URL of images)
+  const [mediaUrl, setMediaUrl] = useState('');
+  const [mediaAlt, setMediaAlt] = useState('');
+
+  // Amenities
+  const [wifi, setWifi] = useState(false);
+  const [parking, setParking] = useState(false);
+  const [breakfast, setBreakfast] = useState(false);
+  const [pets, setPets] = useState(false);
+
   const handleCreateVenue = async () => {
     try {
       const venueData = {
@@ -16,14 +35,35 @@ const CreateVenueForm: React.FC = () => {
         description,
         price,
         maxGuests,
+        media: [
+          {
+            url: mediaUrl,
+            alt: mediaAlt,
+          },
+        ],
+        meta: {
+          wifi,
+          parking,
+          breakfast,
+          pets,
+        },
+        location: {
+          address,
+          city,
+          zip,
+          country,
+          continent,
+          lat: latitude,
+          lng: longitude,
+        },
       };
       await createVenue(venueData);
       setMessage('Venue created successfully!');
     } catch (error) {
       console.error('Error creating venue:', error);
       setMessage('Failed to create venue. Please try again later.');
-  }
-};
+    }
+  };
 
 return (
   <Box
@@ -38,6 +78,8 @@ return (
   >
     <Typography variant="h5">Create a new venue</Typography>
     {message && <Typography color="primary">{message}</Typography>}
+
+    {/* Basic venue details */}
     <TextField
       label="Venue Name"
       variant='outlined'
@@ -66,6 +108,87 @@ return (
       value={maxGuests}
       onChange={(e) => setMaxGuests(Number(e.target.value))}
     />
+
+    {/* Location details */}
+    <Typography variant="h6">Location</Typography>
+    <TextField
+      label="Address"
+      variant='outlined'
+      value={address}
+      onChange={(e) => setAddress(e.target.value)}
+    />
+    <TextField
+      label="City"
+      variant='outlined'
+      value={city}
+      onChange={(e) => setCity(e.target.value)}
+    />
+    <TextField
+      label="Zip"
+      variant='outlined'
+      value={zip}
+      onChange={(e) => setZip(e.target.value)}
+    />
+    <TextField
+      label="Country"
+      variant='outlined'
+      value={country}
+      onChange={(e) => setCountry(e.target.value)}
+    />
+    <TextField
+      label="Continent"
+      variant='outlined'
+      value={continent}
+      onChange={(e) => setContinent(e.target.value)}
+    />
+    <TextField
+      label="Latitude"
+      type="number"
+      variant='outlined'
+      value={latitude}
+    />
+    <TextField
+      label="Longitude"
+      type="number"
+      variant='outlined'
+      value={longitude}
+    />
+
+    {/* Media (URL of images) */}
+    <Typography variant="h6">Media</Typography>
+    <TextField
+      label="Media URL"
+      variant='outlined'
+      value={mediaUrl}
+      onChange={(e) => setMediaUrl(e.target.value)}
+      />
+      <TextField
+      label="Media Alt Text (optional)"
+      variant='outlined'
+      value={mediaAlt}
+      onChange={(e) => setMediaAlt(e.target.value)}
+    />
+
+    {/* Amenities */}
+    <Typography variant="h6">Amenities</Typography>
+    <FormControlLabel
+      control={<Checkbox checked={wifi} onChange={(e) => setWifi(e.target.checked)} />}
+      label="Wifi"
+    />
+    <FormControlLabel
+      control={<Checkbox checked={parking} onChange={(e) => setParking(e.target.checked)} />}
+      label="Parking"
+    />
+    <FormControlLabel
+      control={<Checkbox checked={breakfast} onChange={(e) => setBreakfast(e.target.checked)} />}
+      label="Breakfast"
+    />
+    <FormControlLabel
+      control={<Checkbox checked={pets} onChange={(e) => setPets(e.target.checked)} />}
+      label="Pets Allowed"
+    />
+
+
     <Button onClick={handleCreateVenue} variant="contained" color="primary">
       Create Venue
     </Button>

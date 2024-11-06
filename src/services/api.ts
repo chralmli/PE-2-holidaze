@@ -25,9 +25,12 @@ api.interceptors.request.use((config) => {
             config.headers['X-Noroff-API-Key'] = apiKey;
         }
 
+        // Debugging to ensure headers are attached correctly
+        console.log('Request config:', config);
+
         return config;
-        },
-        (error) => {
+    },
+    (error) => {
         return Promise.reject(error);
     }
 );

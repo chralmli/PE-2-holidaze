@@ -1,24 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, Tabs, Tab, Button } from '@mui/material';
-import { useAuth } from '../context/AuthContext';
+import React, { useState } from 'react';
+import { Box, Typography, Tabs, Tab, CircularProgress } from '@mui/material';
+import useUserProfile from '../hooks/useUserProfile';
 import VenueManagement from '../components/VenueManagement';
 import UserBookings from '../components/UserBookings';
 import UserProfile from './UserProfile';
 import CreateVenueForm from '../components/CreateVenueForm';
 
 const AdminDashboard: React.FC = () => {
-  const { user, isLoggedIn } = useAuth();
+  const { profile, loading: profileLoading, error } = useUserProfile();
   const [tabIndex, setTabIndex] = useState(0);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
   };
 
-  // if the user is not logged in or not a venue manager, restrict access
-  if (!isLoggedIn || !user?.venueManager) {
+  // handle loading state
+  if (profileLoading) {
     return (
-      <Box>
-        <Typography variant="h5" sx={{ textAlign: 'center', marginTop: '20px' }}>Access Denied</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  // handle error state
+  if (error) {
+    return (
+      <Box sx={{ textAlign: 'center', marginTop: '20px' }}>
+        <Typography variant="h5" color="error" sx={{ textAlign: 'center', marginTop: '20px' }}>Error</Typography>
+        <Typography variant="body1">{error}</Typography>
+      </Box>
+    );
+  }
+
+  // handle unauthorized access
+  if (!profile?.venueManager) {
+    return (
+      <Box sx={{ textAlign: 'center', marginTop: '20px' }}>
+        <Typography variant="h5">Access Denied</Typography>
         <Typography variant="body1">Please log in with a Venue Manager account to view this page.</Typography>
       </Box>
     );
@@ -36,7 +55,7 @@ const AdminDashboard: React.FC = () => {
       }}
     >
       <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2}}>
-        Welcome, Venue Manager {user.name}
+        Welcome, Venue Manager {profile.name}
       </Typography>
 
       {/* Tabs for venue manager */}

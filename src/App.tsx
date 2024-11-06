@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { CssBaseline, GlobalStyles } from '@mui/material';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header';
@@ -11,10 +11,30 @@ import UserProfile from './pages/UserProfile';
 import { ThemeProvider } from '@mui/material/styles';
 import muiTheme from './muiTheme'
 import { useAuth } from './context/AuthContext';
+import { getUserProfile } from './services/userService';
+import { UserProfileResponse } from './types/User';
 
 const App: React.FC = () => {
   const { isLoggedIn, user } = useAuth();
+  const [profile, setProfile] = useState<UserProfileResponse['data'] | null>(null);
 
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user) return;
+
+      try {
+        const response = await getUserProfile(user.name);
+        setProfile(response.data);
+      } catch(error) {
+        console.error('Error fetching user profile:', error);
+      }
+    };
+
+    if (isLoggedIn) {
+      fetchUserProfile();
+    }
+  }, [isLoggedIn, user]);
+  
   return (
     <ThemeProvider theme={muiTheme}>
       <>
@@ -59,7 +79,7 @@ const App: React.FC = () => {
           <Route
             path="/admin"
             element={
-              isLoggedIn && user?.venueManager ? (
+              isLoggedIn && profile?.venueManager ? (
                 <AdminDashboard />
               ) : (
                 <Navigate to="/login" />

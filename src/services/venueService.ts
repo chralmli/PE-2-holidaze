@@ -20,11 +20,12 @@ export const getAllVenues = async (): Promise<Venue[]> => {
     }
 };
 
-export const getVenuesByUserId = async (userId: string): Promise<Venue[]> => {
+export const getVenuesByUserId = async (userName: string): Promise<Venue[]> => {
     try {
-        const response = await api.get<{ data: Venue[] }>(`/holidaze/venues?owner=${userId}`);
+        const response = await api.get<{ data: Venue[] }>(`/holidaze/profiles/${userName}/venues`);
         return response.data.data;
     } catch (error) {
+        console.error('Error fetching venues by user:', error);
         throw new Error('Error fetching venues by user');
     }
 };
@@ -34,14 +35,16 @@ export const createVenue = async (venueData: Partial<Venue>): Promise<Venue> => 
         const response = await api.post<VenueResponse>('/holidaze/venues', venueData);
         return response.data.data;
     } catch (error) {
+        console.error('Error creating venue:', error);
         throw new Error('Error creating venue');
     }
 };
 
-export const deleteVenue = async (id: string): Promise<void> => {
+export const deleteVenue = async (venueId: string): Promise<void> => {
     try {
-        await api.delete(`/holidaze/venues/${id}`);
+        await api.delete(`/holidaze/venues/${venueId}`);
     } catch (error) {
-        throw new Error('Error deleting venue');
+        console.error('Error deleting venue:', error);
+        throw error;
     }
 };

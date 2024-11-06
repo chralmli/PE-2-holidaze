@@ -2,21 +2,21 @@ import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button, CircularProgress } from '@mui/material';
 import { getVenuesByUserId, deleteVenue } from '../services/venueService';
 import { Venue } from '../types/Venue';
-import { useAuth } from '../context/AuthContext';
+import useUserProfile from '../hooks/useUserProfile';
 
 const VenueManagement: React.FC = () => {
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const { user } = useAuth();
+  const { profile, loading: profileLoading } = useUserProfile();
 
   useEffect(() => {
     const fetchVenues = async () => {
-      if (!user) return;
+      if (!profile) return;
 
       try {
         setLoading(true);
         // Fetch venues owned by the current logged-in user
-        const venuesData = await getVenuesByUserId(user.name);
+        const venuesData = await getVenuesByUserId(profile.name);
         setVenues(venuesData);
       } catch (error) {
         console.error('Error fetching venues:', error);
@@ -25,8 +25,10 @@ const VenueManagement: React.FC = () => {
       }
     };
 
-    fetchVenues();
-  }, [user]);
+    if (!profileLoading) {
+      fetchVenues();
+    }
+  }, [profile, profileLoading]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -38,7 +40,11 @@ const VenueManagement: React.FC = () => {
   };
 
   if (loading) {
-    return <CircularProgress />;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   return (

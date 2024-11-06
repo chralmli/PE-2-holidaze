@@ -1,66 +1,121 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { getBookingsByUserId } from '../services/bookingService';
+import { Box, Typography, CircularProgress, Button } from '@mui/material';
+import { getBookingsByUserName, updateBooking, deleteBooking } from '../services/bookingService';
 import { Booking, BookingResponse } from '../types/Booking';
-import { Box, Typography, CircularProgress } from '@mui/material';
+import useUserProfile from '../hooks/useUserProfile';
 
 const UserBookings: React.FC = () => {
-  const { user, isLoggedIn } = useAuth();
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const { profile, loading: profileLoading } = useUserProfile();
+  const [bookings, setBookings] = useState<BookingResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    if (isLoggedIn && user) {
-      const fetchBookings = async () => {
-        try {
-          setLoading(true);
-          const bookingsData: BookingResponse[] = await getBookingsByUserId(user.name);
+    const fetchBookings = async () => {
+      if (!profile) return;
 
-          // Transform BookingResponse to Booking
-          const transformedBookings = bookingsData.map(booking => ({
-            id: booking.id,
-            dateFrom: booking.dateFrom,
-            dateTo: booking.dateTo,
-            guests: booking.guests,
-            created: booking.created,
-            updated: booking.updated,
-            venue: booking.venue,
-            customer: booking.customer,
-          }));
+      try {
+        setLoading(true);
+        const bookingsData: BookingResponse[] = await getBookingsByUserName(profile.name);
 
-          setBookings(transformedBookings);
-        } catch (error) {
-          console.error('Error fetching bookings:', error);
-        } finally {
-          setLoading(false);
-        }
-      };
+        setBookings(bookingsData);
+      } catch (error) {
+        console.error('Error fetching user bookings:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    if (!profileLoading) {
       fetchBookings();
     }
-  }, [isLoggedIn, user]);
+
+  }, [profile, profileLoading]);
+
+  if (loading || profileLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  const handleUpdateBooking = async (bookingId: string) => {
+    const newDateFrom = prompt("Enter new start date (YYYY-MM-DD):");
+    const newDateTo = prompt("Enter new end date (YYYY-MM-DD):");
+    if (!newDateFrom || !newDateTo) {
+      return;
+    }
+
+    try {
+      const updatedBooking = await updateBooking(bookingId, {
+        dateFrom: newDateFrom,
+        dateTo: newDateTo,
+      });
+      setBookings((prev) =>
+        prev.map((booking) =>
+          booking.id === bookingId ? { ...booking, ...updatedBooking } : booking
+        )
+      );
+    } catch (error) {
+      console.error('Error updating booking:', error);
+    }
+  };
+
+  const handleDeleteBooking = async (bookingId: string) => {
+    if (window.confirm('Are you sure you want to delete this booking')) {
+      try {
+        await deleteBooking(bookingId);
+        setBookings((prev) => prev.filter((booking) => booking.id !== bookingId));
+      } catch (error) {
+        console.error('Error deleting booking:',  error);
+      }
+    }
+  };
 
   if (loading) {
-    return <CircularProgress />;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+  
+  if (bookings.length === 0) {
+    return (
+      <Typography variant="body1" sx={{ textAlign: 'center', marginTop: '20px' }}>
+        No upcoming bookings found. Please check back later.
+      </Typography>
+    );
   }
 
   return (
     <Box>
-      <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2 }}>
-        Your Bookings
-      </Typography>
-      {bookings.length === 0 ? (
-        <Typography>No bookings found.</Typography>
-      ) : (
-        bookings.map((booking) => (
-          <Box key={booking.id} sx={{ mb: 2, border: '1px solid #e0e0e0', padding: '16px', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Typography variant="h6">{booking.venue?.name || 'Venue'}</Typography>
-            <Typography>Guests: {booking.guests}</Typography>
-            <Typography>From: {booking.dateFrom}</Typography>
-            <Typography>To: {booking.dateTo}</Typography>
+      <Typography variant="h4" sx={{ mb: 2 }}>Your upcoming bookings</Typography>
+      {bookings.map((booking) => (
+        <Box key={booking.id} sx={{ mb: 2, p: 2, border: '1px solid #ccc', borderRadius: '8px' }}>
+          <Typography variant="h6">Venue: {booking.venue?.name || 'N/A'}</Typography>
+          <Typography>Guests: {booking.guests}</Typography>
+          <Typography>From: {booking.dateFrom}</Typography>
+          <Typography>To: {booking.dateTo}</Typography>
+
+          <Box sx={{ display: 'flex', gap: 2, marginTop: 2 }}>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => handleUpdateBooking(booking.id)}
+            >
+              Update Booking
+            </Button>
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={() => handleDeleteBooking(booking.id)}
+            >
+              Delete Booking
+            </Button>
           </Box>
-        ))
-      )}
+        </Box>
+      ))}
     </Box>
   );
 };

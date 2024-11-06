@@ -1,112 +1,127 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Avatar, CircularProgress } from '@mui/material';
-import { useAuth } from '../context/AuthContext';
-import { getUserProfile } from '../services/userService';
-import { UserProfileResponse } from '../types/User';
+import { Box, Typography, Avatar, CircularProgress, Button } from '@mui/material';
+import useUserProfile from '../hooks/useUserProfile';
 import VenueCard from '../components/VenueCard';
 import BookingCard from '../components/BookingCard';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const UserProfile: React.FC = () => {
-  const { user } = useAuth();
-  const [profile, setProfile] = useState<UserProfileResponse['data'] | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      if (!user) {
-        console.warn('No user is currently logged in');
-        return;
-      }
-      try {
-        setLoading(true);
-        console.log('Fetching user profile with name:', user.name);
-        const token = user.accessToken;
-        console.log('Token being user:', token);
-
-        // Fetch profile data for the current logged-in user
-        const response = await getUserProfile(user.name);
-        setProfile(response.data);
-      } catch (error) {
-        console.error('Error fetching user profile:', error);
-      } finally {
-        setLoading(false);
-    }
-  };
-  
-  fetchUserProfile();
-}, [user]);
+  const { profile, loading, error } = useUserProfile();
+  const navigate = useNavigate();
+  const location = useLocation();
 
 if (loading) {
-  return <CircularProgress />;
+  return (
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <CircularProgress />
+    </Box>
+  );
+}
+
+if (error) {
+  return (
+    <Box sx={{ textAlign: 'center', marginTop: '20px' }}>
+      <Typography variant="body1" color="error">{error}</Typography>
+    </Box>
+  )
 }
 
 if (!profile) {
-  return <Typography variant="body1">User profile not found.</Typography>;
+  return (
+    <Box sx={{ textAlign: 'center', marginTop: '20px' }}>
+      <Typography variant="body1">User profile not found.</Typography>
+    </Box>
+  );
 }
 
 return (
-  <Box sx={{ maxWidth: '1200px', margin: '40px auto', padding: '20px' }}>
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '32px' }}>
+  <Box sx={{ maxWidth: '1200px', margin: '40px auto', padding: '24px', boxShadow: '0 4px 12px rgba(0, 0, 0,  0.1)', borderRadius: '12px', backgroundColor: '#fff' }}>
+    {/* User info section */}
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '32px', padding: '16px', backgroundColor: '#f5f5f5', borderRadius: '12px' }}>
       <Avatar
         src={profile.avatar?.url}
         alt={profile.avatar?.alt || 'User avatar'}
-        sx={{ width: 100, height: 100 }}
+        sx={{ width: 120, height: 120, border: '2px solid #ccc' }}
       />
       <Box>
-        <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#333' }}>
           {profile.name}
         </Typography>
         <Typography variant="body1" color="text.secondary">
           {profile.email}
         </Typography>
         {profile.bio && (
-          <Typography variant="body1" sx={{ marginTop: '8px' }}>
+          <Typography variant="body1" sx={{ marginTop: '12px', color: '#666' }}>
             {profile.bio}
           </Typography>
         )}
       </Box>
     </Box>
 
+    {/* Banner section */}
     {profile.banner && (
-      <img
-        src={profile.banner?.url}
-        alt={profile.banner?.alt || 'User banner'}
-        style={{ width: '100%', height: '300px', borderRadius: '10px', marginBottom: '32px', objectFit: 'cover' }}
-      />
+      <Box sx={{ marginBottom: '32px' }}>
+        <img
+          src={profile.banner?.url}
+          alt={profile.banner?.alt || 'User banner'}
+          style={{ width: '100%', height: '250px', borderRadius: '12px', objectFit: 'cover' }}
+        />
+      </Box>
     )}
 
-    <Box sx={{ marginBottom: '32px'}}>
-      <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: '16px'}}>
+    {/* Venues section */}
+    <Box sx={{ marginBottom: '40px'}}>
+      <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: '16px', color: '#333'}}>
         Your venues ({profile._count?.venues || 0})
       </Typography>
       {profile.venues && profile.venues.length === 0 ? (
-        <Typography variant="body1">You have no venues listed</Typography>
-      ): (
-        profile.venues?.map((venue) => <VenueCard key={venue.id} venue={venue} />)
+        <Typography variant="body1" color="text.secondary">You have no venues listed</Typography>
+      ) : (
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {profile.venues?.map((venue) => (
+            <VenueCard key={venue.id} venue={venue} />
+          ))}
+        </Box>
       )}
     </Box>
 
+    {/* Bookings section */}
     <Box>
-      <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: '16px' }}>
+      <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: '16px', color: '#333' }}>
         Your bookings ({profile._count?.bookings || 0})
       </Typography>
       {profile.bookings && profile.bookings.length === 0 ? (
-        <Typography variant="body1">You have no bookings yet.</Typography>
+        <Typography variant="body1" color="text.secondary">You have no bookings yet.</Typography>
       ) : (
-        profile.bookings?.map((booking) => (
-        <BookingCard
-          key={booking.id}
-          booking={{
-            ...booking,
-            created: '',
-            updated: ''
-          }}
-        />
-        ))
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {profile.bookings?.map((booking) => (
+            <BookingCard
+              key={booking.id}
+              booking={{
+                ...booking,
+                created: '',
+                updated: '',
+              }}
+            />
+          ))}
+        </Box>
       )}
     </Box>
+
+      {/* Admin dashboard access for venue managers */}
+      {profile?.venueManager && location.pathname !== '/admin' && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate('/admin')}
+          sx={{ marginTop: '24px', display: 'block', width: '100%' }}
+        >
+          Go to Admin Dashboard
+        </Button>
+      )}
   </Box>
-  ); 
+  );
 };
+
 
 export default UserProfile;
