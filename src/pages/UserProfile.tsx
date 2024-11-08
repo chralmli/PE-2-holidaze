@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Box, Typography, Avatar, CircularProgress, Button } from '@mui/material';
 import useUserProfile from '../hooks/useUserProfile';
 import VenueCard from '../components/VenueCard';

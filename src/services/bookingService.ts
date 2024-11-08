@@ -22,49 +22,6 @@ export const deleteBooking = async (bookingId: string): Promise<void> => {
     }
 };
 
-// Get bookings for a specific venue
-export const getBookingsByVenueId = async (venueId: string,): Promise<BookingResponse[]> => {
-    try {
-        console.log(`Fetching bookings for venue: ${venueId}`);
-        const response = await api.get<{ data: BookingResponse[] }>(`/holidaze/bookings?venueId=${venueId}&limit=100`);
-
-        const bookings = response.data.data;
-
-        console.log(`Bookings fetched:`, bookings);
-
-        // Filter and validate bookings
-        const validBookings = bookings.filter((booking) => {
-            const dateFrom = new Date(booking.dateFrom);
-            const dateTo = new Date(booking.dateTo);
-            
-            if (dateTo < dateFrom) {
-                console.error('Invalid booking dates:', booking);
-                return false;
-            }
-
-            if(isNaN(dateFrom.getTime()) || isNaN(dateTo.getTime())) {
-                console.error('Invalid date format:', booking);
-                return false;
-            }
-
-            return true;
-        })
-
-        console.log(`Valid bookings after filtering`, validBookings);
-
-        return validBookings;
-
-    } catch (error: any) {
-        if (error.response && error.response.status === 404) {
-            console.warn('No bookings found for this venue');
-            return [];
-        } else {
-            console.error('Error fetching bookings:', error);
-            throw new Error('Error fetching bookings');
-        }
-    }
-};
-
 // Function to get bookings for a specific user
 export const getBookingsByUserName = async (userName: string): Promise<BookingResponse[]> => {
     try {

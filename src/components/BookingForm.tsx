@@ -5,7 +5,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import dayjs, { Dayjs } from 'dayjs';
 import { useAuth } from '../context/AuthContext';
-import { createBooking, getBookingsByVenueId } from '../services/bookingService';
+import { createBooking } from '../services/bookingService';
+import { getVenueById } from '../services/venueService';
 import { useNavigate } from 'react-router-dom';
 import '../assets/styles/CustomDatePicker.css'
 
@@ -32,12 +33,12 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId }) => {
         if (!venueId) return;
   
         try {
-          const bookings = await getBookingsByVenueId(venueId);
-          console.log('Bookings fetched', bookings);
+          const venue = await getVenueById(venueId);
+          console.log('Bookings fetched', venue);
 
           const bookedDatesSet = new Set<string>();
 
-          bookings.forEach((booking) => {
+          venue.bookings?.forEach((booking) => {
             const start = dayjs(booking.dateFrom);
             const end = dayjs(booking.dateTo)
 

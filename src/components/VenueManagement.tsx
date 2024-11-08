@@ -1,13 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Button, CircularProgress } from '@mui/material';
+import { Box, Typography, CircularProgress, Grid } from '@mui/material';
 import { getVenuesByUserId, deleteVenue } from '../services/venueService';
 import { Venue } from '../types/Venue';
+import VenueCard from './VenueCard';
 import useUserProfile from '../hooks/useUserProfile';
+import { useNavigate } from 'react-router-dom';
+import BookingsModal from './BookingsModal';
 
 const VenueManagement: React.FC = () => {
+  const { profile, loading: profileLoading } = useUserProfile();
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const { profile, loading: profileLoading } = useUserProfile();
+  const navigate = useNavigate();
+
+  // State to manage bookings modal visibility and selected venue ID
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchVenues = async () => {
@@ -30,22 +38,40 @@ const VenueManagement: React.FC = () => {
     }
   }, [profile, profileLoading]);
 
-  const handleDelete = async (id: string) => {
+  const handleDeleteVenue = async (venueId: string) => {
+    if (window.confirm('Are you sure you want to delete this venue?')) {
     try {
-      await deleteVenue(id);
-      setVenues((prevVenues) => prevVenues.filter((venue) => venue.id !== id));
+      await deleteVenue(venueId);
+      setVenues((prevVenues) => prevVenues.filter((venue) => venue.id !== venueId));
     } catch (error) {
       console.error('Error deleting venue:', error);
     }
+  }
+};
+
+const handleViewBookings = (venueId: string) => {
+  // Open the bookings modal for the selected venue
+  setSelectedVenueId(venueId);
+  setIsModalOpen(true);
+};
+
+const handleEditVenue = (venueId: string) => {
+  navigate(`/venues/edit/${venueId}`);
+};
+
+// Function to close the bookings modal
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedVenueId(null);
   };
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+if (loading || profileLoading) {
+  return (
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <CircularProgress />
+    </Box>
+  );
+}
 
   return (
     <Box>
@@ -57,21 +83,28 @@ const VenueManagement: React.FC = () => {
           No venues found.
         </Typography>
       ) : (
-        venues.map((venue) => (
-          <Box key={venue.id} sx={{ mb: 2, border: '1px solid #e0e0e0', padding: '16px', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: 2}}>
-            <Typography variant="h6" color="text.primary" sx={{ fontWeight: 'bold', fontSize: '1rem' }}>
-              {venue.name}
-            </Typography>
-            <Typography>Guests: {venue.maxGuests}</Typography>
-            <Typography>Price per night: ${venue.price}</Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
-              {venue.description}
-            </Typography>
-            <Button variant="contained" color="secondary" onClick={() => handleDelete(venue.id)}>
-              Delete
-            </Button>
-          </Box>
-        ))
+        <Grid container spacing={3}>
+          {venues.map((venue) => (
+            <Grid item xs={12} sm={6} md={4} key={venue.id}>
+              <VenueCard
+                key={venue.id}
+                venue={venue}
+                onDelete={handleDeleteVenue}
+                onViewBookings={handleViewBookings}
+                onEdit={handleEditVenue}
+              />
+            </Grid>
+          ))}
+        </Grid>
+      )}
+
+      {/* Bookings Modal */}
+      {selectedVenueId && (
+        <BookingsModal
+          open={isModalOpen}
+          onClose={handleCloseModal}
+          venueId={selectedVenueId}
+        />
       )}
     </Box>
   );

@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import VenueDetails from './pages/VenueDetails';
+import EditVenueForm from './pages/EditVenueForm';
 import AdminDashboard from './pages/AdminDashboard';
 import UserProfile from './pages/UserProfile';
 import { ThemeProvider } from '@mui/material/styles';
@@ -34,7 +35,7 @@ const App: React.FC = () => {
       fetchUserProfile();
     }
   }, [isLoggedIn, user]);
-  
+
   return (
     <ThemeProvider theme={muiTheme}>
       <>
@@ -65,6 +66,7 @@ const App: React.FC = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/venue/:id" element={<VenueDetails />} />
+          <Route path="/venues/edit/:venueId" element={<EditVenueForm />} />
           <Route
             path="/profile"
             element={

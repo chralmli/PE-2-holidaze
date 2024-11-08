@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, Checkbox, FormControlLabel } from '@mui/material';
+import { Box, TextField, Button, Typography, Checkbox, FormControlLabel, Alert } from '@mui/material';
 import { createVenue } from '../services/venueService';
 
 const CreateVenueForm: React.FC = () => {
   const [venueName, setVenueName] = useState('');
   const [description, setDescription] = useState('');
-  const [price, setPrice] = useState(0);
-  const [maxGuests, setMaxGuests] = useState(1);
-  const [message, setMessage] = useState<string | null>(null);
+  const [price, setPrice] = useState<string>('');
+  const [maxGuests, setMaxGuests] = useState<string>('');
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // Location details
   const [address, setAddress] = useState('');
@@ -15,8 +15,8 @@ const CreateVenueForm: React.FC = () => {
   const [zip, setZip] = useState('');
   const [country, setCountry] = useState('');
   const [continent, setContinent] = useState('');
-  const [latitude, setLatitude] = useState(0);
-  const [longitude, setLongitude] = useState(0);
+  const [latitude, setLatitude] = useState<string>('');
+  const [longitude, setLongitude] = useState<string>('');
 
   // Media (URL of images)
   const [mediaUrl, setMediaUrl] = useState('');
@@ -29,12 +29,20 @@ const CreateVenueForm: React.FC = () => {
   const [pets, setPets] = useState(false);
 
   const handleCreateVenue = async () => {
+    if (!venueName || !description || !price || !maxGuests) {
+      setMessage({
+        type: 'error',
+        text: 'Please fill in all required fields (venue name, description, price, max guests)',
+      });
+      return;
+    }
+
     try {
       const venueData = {
         name: venueName,
         description,
-        price,
-        maxGuests,
+        price: Number(price),
+        maxGuests: Number(maxGuests),
         media: [
           {
             url: mediaUrl,
@@ -53,15 +61,34 @@ const CreateVenueForm: React.FC = () => {
           zip,
           country,
           continent,
-          lat: latitude,
-          lng: longitude,
+          lat: latitude ? Number(latitude) : 0,
+          lng: longitude ? Number(longitude) : 0,
         },
       };
       await createVenue(venueData);
-      setMessage('Venue created successfully!');
+      setMessage({ type: 'success', text: 'Venue created successfully!' });
+
+      // Clear form after successful creation
+      setVenueName('');
+      setDescription('');
+      setPrice('');
+      setMaxGuests('');
+      setAddress('');
+      setCity('');
+      setZip('');
+      setCountry('');
+      setContinent('');
+      setLatitude('');
+      setLongitude('');
+      setMediaUrl('');
+      setMediaAlt('');
+      setWifi(false);
+      setParking(false);
+      setBreakfast(false);
+      setPets(false);
     } catch (error) {
       console.error('Error creating venue:', error);
-      setMessage('Failed to create venue. Please try again later.');
+      setMessage({ type: 'error', text: 'Failed to create venue. Please try again later.' });
     }
   };
 
@@ -77,7 +104,12 @@ return (
     }}
   >
     <Typography variant="h5">Create a new venue</Typography>
-    {message && <Typography color="primary">{message}</Typography>}
+
+    {message && (
+      <Alert severity={message.type} onClose={() => setMessage(null)}>
+        {message.text}
+      </Alert>
+    )}
 
     {/* Basic venue details */}
     <TextField
@@ -85,6 +117,7 @@ return (
       variant='outlined'
       value={venueName}
       onChange={(e) => setVenueName(e.target.value)}
+      required
     />
     <TextField
       label="Description"
@@ -93,20 +126,25 @@ return (
       rows={4}
       value={description}
       onChange={(e) => setDescription(e.target.value)}
+      required
     />
     <TextField
       label="Price per night"
       type="number"
       variant='outlined'
       value={price}
-      onChange={(e) => setPrice(Number(e.target.value))}
+      onChange={(e) => setPrice(e.target.value)}
+      required
+      InputProps={{ inputProps: { min: 0 } }}
     />
     <TextField
       label="Max guests"
       type="number"
       variant='outlined'
       value={maxGuests}
-      onChange={(e) => setMaxGuests(Number(e.target.value))}
+      onChange={(e) => setMaxGuests(e.target.value)}
+      required
+      InputProps={{ inputProps: { min: 1 } }}
     />
 
     {/* Location details */}
@@ -146,12 +184,14 @@ return (
       type="number"
       variant='outlined'
       value={latitude}
+      onChange={(e) => setLatitude(e.target.value)}
     />
     <TextField
       label="Longitude"
       type="number"
       variant='outlined'
       value={longitude}
+      onChange={(e) => setLongitude(e.target.value)}
     />
 
     {/* Media (URL of images) */}
