@@ -66,6 +66,7 @@ const App: React.FC = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/venue/:id" element={<VenueDetails />} />
+          <Route path="/admin/venue/:id" element={<VenueDetails isManagerView />} />
           <Route path="/venues/edit/:venueId" element={<EditVenueForm />} />
           <Route
             path="/profile"

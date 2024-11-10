@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, Typography, Button, CardMedia, Box, IconButton, Menu, MenuItem } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Venue } from '../types/Venue'
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 
@@ -9,15 +9,26 @@ type VenueCardProps = {
     onDelete?: (venueId: string) => void;
     onViewBookings?: (venueId: string) => void;
     onEdit?: (venueId: string) => void;
+    isManagerView?: boolean;
 };
 
-const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, onEdit }) => {
+const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, onEdit, isManagerView = false }) => {
     const defaultImage = 'https://placehold.co/400x200?text=No+Image+Available';
 
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
     const handleMenuClose = () => setAnchorEl(null);
 
+    const navigate = useNavigate();
+
+    const handleViewDetails = () => {
+        if (isManagerView) {
+            navigate(`/admin/venue/${venue.id}`);
+        } else {
+            navigate(`/venue/${venue.id}`);
+        }
+    };
+ 
     return (
         <Card variant="outlined" sx={{ mb: 2, boxShadow: 2, borderRadius: '10px' }}>
             {/* Venue image */}
@@ -35,7 +46,7 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, 
                     {venue.description}
                 </Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Button color="primary" component={Link} to={`/venues/${venue.id}`} variant="contained">
+                    <Button color="primary" onClick={handleViewDetails} variant="contained">
                         View Details
                     </Button>
 

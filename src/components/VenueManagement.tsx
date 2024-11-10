@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, CircularProgress, Grid } from '@mui/material';
-import { getVenuesByUserId, deleteVenue } from '../services/venueService';
+import { getVenuesByUserId } from '../services/venueService';
+import { handleDeleteVenue } from '../services/venueUtils';
 import { Venue } from '../types/Venue';
 import VenueCard from './VenueCard';
 import useUserProfile from '../hooks/useUserProfile';
 import { useNavigate } from 'react-router-dom';
 import BookingsModal from './BookingsModal';
+import useBookingModal from '../hooks/useBookingModal';
 
 const VenueManagement: React.FC = () => {
   const { profile, loading: profileLoading } = useUserProfile();
@@ -14,8 +16,7 @@ const VenueManagement: React.FC = () => {
   const navigate = useNavigate();
 
   // State to manage bookings modal visibility and selected venue ID
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [selectedVenueId, setSelectedVenueId] = useState<string | null>(null);
+const { isModalOpen, selectedVenueId, openModal, closeModal } = useBookingModal();
 
   useEffect(() => {
     const fetchVenues = async () => {
@@ -38,32 +39,19 @@ const VenueManagement: React.FC = () => {
     }
   }, [profile, profileLoading]);
 
-  const handleDeleteVenue = async (venueId: string) => {
-    if (window.confirm('Are you sure you want to delete this venue?')) {
-    try {
-      await deleteVenue(venueId);
+  const handleDeleteVenueClick = (venueId: string) => {
+    handleDeleteVenue(venueId, () => {
       setVenues((prevVenues) => prevVenues.filter((venue) => venue.id !== venueId));
-    } catch (error) {
-      console.error('Error deleting venue:', error);
-    }
-  }
-};
+    });
+  };
 
 const handleViewBookings = (venueId: string) => {
-  // Open the bookings modal for the selected venue
-  setSelectedVenueId(venueId);
-  setIsModalOpen(true);
+  openModal(venueId);
 };
 
 const handleEditVenue = (venueId: string) => {
   navigate(`/venues/edit/${venueId}`);
 };
-
-// Function to close the bookings modal
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedVenueId(null);
-  };
 
 if (loading || profileLoading) {
   return (
@@ -89,7 +77,8 @@ if (loading || profileLoading) {
               <VenueCard
                 key={venue.id}
                 venue={venue}
-                onDelete={handleDeleteVenue}
+                isManagerView={true}
+                onDelete={handleDeleteVenueClick}
                 onViewBookings={handleViewBookings}
                 onEdit={handleEditVenue}
               />
@@ -102,7 +91,7 @@ if (loading || profileLoading) {
       {selectedVenueId && (
         <BookingsModal
           open={isModalOpen}
-          onClose={handleCloseModal}
+          onClose={closeModal}
           venueId={selectedVenueId}
         />
       )}
