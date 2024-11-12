@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, Typography, Button, CardMedia, Box, IconButton, Menu, MenuItem } from '@mui/material';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Venue } from '../types/Venue'
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 
@@ -28,6 +28,10 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, 
             navigate(`/venue/${venue.id}`);
         }
     };
+
+    // check if `venue.media` is defined and has at least one element
+    const mediaUrl = venue.media?.length > 0 ? venue.media[0].url : defaultImage;
+    const mediaAlt = venue.media && venue.media.length > 0? venue.media[0].alt : 'Placeholder image for venue';
  
     return (
         <Card variant="outlined" sx={{ mb: 2, boxShadow: 2, borderRadius: '10px' }}>
@@ -35,8 +39,8 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, 
             <CardMedia
                 component="img"
                 height="200"
-                image={venue.media?.length > 0 ? venue.media[0].url : defaultImage}
-                alt={venue.media?.[0].alt || 'Placeholder image for venue'}
+                image={mediaUrl}
+                alt={mediaAlt}
             />
             <CardContent>
                 <Typography variant="h5" component="div" sx={{ fontWeight: 'bold', mb: 1 }}>

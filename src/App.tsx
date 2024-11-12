@@ -8,6 +8,7 @@ import Login from './pages/Login';
 import VenueDetails from './pages/VenueDetails';
 import EditVenueForm from './pages/EditVenueForm';
 import AdminDashboard from './pages/AdminDashboard';
+import VenuesPage from './pages/VenuesPage';
 import UserProfile from './pages/UserProfile';
 import { ThemeProvider } from '@mui/material/styles';
 import muiTheme from './muiTheme'
@@ -63,6 +64,7 @@ const App: React.FC = () => {
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/venues" element={<VenuesPage />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
           <Route path="/venue/:id" element={<VenueDetails />} />
