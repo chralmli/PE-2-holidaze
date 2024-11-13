@@ -16,10 +16,10 @@ export const getVenueById = async (id: string): Promise<Venue> => {
     }
 };
 
-export const getAllVenues = async (page: number, limit: number): Promise<Venue[]> => {
+export const getAllVenues = async (page: number, limit: number): Promise<VenueResponse> => {
     try {
         const response = await api.get<{ data: Venue[] }>(`/holidaze/venues?page=${page}&limit=${limit}`);
-        return response.data.data;
+        return response.data;
     } catch (error) {
         throw new Error ('Error fetching venues')
     }
