@@ -8,6 +8,7 @@ export interface Venue {
     price: number;
     maxGuests: number;
     rating?: number;
+    ratingCount?: number;
     created: string;
     updated: string;
     meta: {

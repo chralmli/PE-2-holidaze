@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextField, Button } from '@mui/material';
+import { TextField, Button, Box } from '@mui/material';
 
 type SearchBarProps = {
     onSearch: (search: string) => void;
@@ -13,15 +13,32 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
     };
 
     return (
-        <div>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            mt: 2
+          }}
+        >
             <TextField
                 label="Search Venues"
                 variant="outlined"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
+                fullWidth
+                sx={{ flex: 1 }}
             />
-            <Button onClick={handleSearch} variant="contained">Search</Button>
-        </div>
+            <Button
+                onClick={handleSearch} 
+                variant="contained"
+                sx={{
+                    height: '56px'
+                }}
+            >
+                Search
+            </Button>
+        </Box>
     );
 };
 

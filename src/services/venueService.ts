@@ -16,11 +16,23 @@ export const getVenueById = async (id: string): Promise<Venue> => {
     }
 };
 
-export const getAllVenues = async (page: number, limit: number): Promise<VenueResponse> => {
+export const getAllVenues = async (page: number, perPage: number, options: { _owner?: boolean, _bookings?: boolean }): Promise<VenueResponse> => {
     try {
-        const response = await api.get<{ data: Venue[] }>(`/holidaze/venues?page=${page}&limit=${limit}`);
+        const queryParams = new URLSearchParams();
+        queryParams.append('page', page.toString());
+        queryParams.append('perPage', perPage.toString());
+
+        if (options._owner) {
+            queryParams.append('_owner', 'true');
+        }
+        if (options._bookings) {
+            queryParams.append('_bookings', 'true');
+        }
+
+        const response = await api.get<VenueResponse>(`/holidaze/venues?${queryParams.toString()}`);
         return response.data;
     } catch (error) {
+        console.error('Error fetching venues:', error);
         throw new Error ('Error fetching venues')
     }
 };
