@@ -1,14 +1,48 @@
-import React from 'react';
-import { Box, Typography, Avatar, CircularProgress, Button } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Typography, CircularProgress, Button } from '@mui/material';
 import useUserProfile from '../hooks/useUserProfile';
-import VenueCard from '../components/VenueCard';
-import BookingCard from '../components/BookingCard';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { updateUserProfile } from '../services/userService';
+import { useAuth } from '../context/AuthContext';
+import VenueSection from '../components/VenueSection';
+import BookingSection from '../components/BookingSection.tsx';
+import EditProfileModal from '../components/EditProfileModal.tsx';
+import ProfileInfo from '../components/ProfileInfo';
 
 const UserProfile: React.FC = () => {
+  const { user, login } = useAuth();
   const { profile, loading, error } = useUserProfile();
+  const [updating, setUpdating] = useState<boolean>(false);
+  const [updateError, setUpdateError] = useState<string | null>(null);
+  const [editProfileOpen, setEditProfileOpen] = useState<boolean>(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Handlers for edit profile modal
+  const handleOpenEditProfile = () => setEditProfileOpen(true);
+  const handleCloseEditProfile = () => setEditProfileOpen(false);
+
+  const handleUpdateProfile = async (updates: { bio: string; avatarUrl: string; bannerUrl: string; }) => {
+    if (!user) return;
+
+    try {
+      setUpdating(true);
+      setUpdateError(null);
+
+      // Update user profile
+      await updateUserProfile(user.name, updates);
+
+      // update the Auth context and localStorage
+      login({ ...user, ...updates });
+
+      handleCloseEditProfile();
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      setUpdateError('Failed to update user profile');
+    } finally {
+      setUpdating(false);
+    }
+  };
 
 if (loading) {
   return (
@@ -37,78 +71,30 @@ if (!profile) {
 return (
   <Box sx={{ maxWidth: '1200px', margin: '40px auto', padding: '24px', boxShadow: '0 4px 12px rgba(0, 0, 0,  0.1)', borderRadius: '12px', backgroundColor: '#fff' }}>
     {/* User info section */}
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '32px', padding: '16px', backgroundColor: '#f5f5f5', borderRadius: '12px' }}>
-      <Avatar
-        src={profile.avatar?.url}
-        alt={profile.avatar?.alt || 'User avatar'}
-        sx={{ width: 120, height: 120, border: '2px solid #ccc' }}
-      />
-      <Box>
-        <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#333' }}>
-          {profile.name}
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          {profile.email}
-        </Typography>
-        {profile.bio && (
-          <Typography variant="body1" sx={{ marginTop: '12px', color: '#666' }}>
-            {profile.bio}
-          </Typography>
-        )}
-      </Box>
-    </Box>
+    <ProfileInfo profile={profile} onEditProfile={handleOpenEditProfile} />
 
-    {/* Banner section */}
-    {profile.banner && (
-      <Box sx={{ marginBottom: '32px' }}>
-        <img
-          src={profile.banner?.url}
-          alt={profile.banner?.alt || 'User banner'}
-          style={{ width: '100%', height: '250px', borderRadius: '12px', objectFit: 'cover' }}
-        />
-      </Box>
-    )}
+    {/* Edit profile modal */}
+    <EditProfileModal
+      open={editProfileOpen}
+      onClose={handleCloseEditProfile}
+      onUpdate={handleUpdateProfile}
+      updating={updating}
+      updateError={updateError}
+      initialValues={{
+        bio: profile.bio || '',
+        avatarUrl: profile.avatar?.url || '',
+        bannerUrl: profile.banner?.url || '',
+      }}
+    />
+    
+      {/* Venues section */}
+      <VenueSection venues={profile.venues} venueCount={profile._count?.venues || 0} />
 
-    {/* Venues section */}
-    <Box sx={{ marginBottom: '40px'}}>
-      <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: '16px', color: '#333'}}>
-        Your venues ({profile._count?.venues || 0})
-      </Typography>
-      {profile.venues && profile.venues.length === 0 ? (
-        <Typography variant="body1" color="text.secondary">You have no venues listed</Typography>
-      ) : (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {profile.venues?.map((venue) => (
-            <VenueCard key={venue.id} venue={venue} />
-          ))}
-        </Box>
-      )}
-    </Box>
+      {/* Bookings section */}
+      <BookingSection bookings={profile.bookings} bookingCount={profile._count?.bookings || 0} />
 
-    {/* Bookings section */}
-    <Box>
-      <Typography variant="h5" sx={{ fontWeight: 'bold', marginBottom: '16px', color: '#333' }}>
-        Your bookings ({profile._count?.bookings || 0})
-      </Typography>
-      {profile.bookings && profile.bookings.length === 0 ? (
-        <Typography variant="body1" color="text.secondary">You have no bookings yet.</Typography>
-      ) : (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {profile.bookings?.map((booking) => (
-            <BookingCard
-              key={booking.id}
-              booking={{
-                ...booking,
-                created: '',
-                updated: '',
-              }}
-            />
-          ))}
-        </Box>
-      )}
-    </Box>
 
-      {/* Admin dashboard access for venue managers */}
+      {/* Admin dashboard access */}
       {profile?.venueManager && location.pathname !== '/admin' && (
         <Button
           variant="contained"

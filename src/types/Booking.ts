@@ -1,10 +1,10 @@
-export type Booking = {
+export interface Booking {
     id: string;
     dateFrom: string;
     dateTo: string;
     guests: number;
-    created: string;
-    updated: string;
+    created?: string;
+    updated?: string;
     venue?: {
         id: string;
         name: string;
@@ -33,7 +33,7 @@ export type Booking = {
         owner?: {
             name: string;
             email: string;
-            bio: string;
+            bio?: string;
             avatar?: {
                 url: string;
                 alt: string;

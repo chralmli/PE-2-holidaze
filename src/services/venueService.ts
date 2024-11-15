@@ -3,7 +3,7 @@ import { Venue, VenueResponse } from '../types/Venue';
 
 export const getVenueById = async (id: string): Promise<Venue> => {
     try {
-        const response = await api.get<VenueResponse>(`/holidaze/venues/${id}?_bookings=true`);
+        const response = await api.get<{ data: Venue }>(`/holidaze/venues/${id}?_bookings=true&_owner=true`);
 
         if (!response.data || !response.data.data) {
             throw new Error('Invalid response format');
@@ -39,7 +39,7 @@ export const getAllVenues = async (page: number, perPage: number, options: { _ow
 
 export const getVenuesByUserId = async (userName: string): Promise<Venue[]> => {
     try {
-        const response = await api.get<{ data: Venue[] }>(`/holidaze/profiles/${userName}/venues`);
+        const response = await api.get<{ data: Venue[] }>(`/holidaze/profiles/${userName}/venues?_bookings=true&_owner=true`);
         return response.data.data;
     } catch (error) {
         console.error('Error fetching venues by user:', error);
@@ -49,7 +49,7 @@ export const getVenuesByUserId = async (userName: string): Promise<Venue[]> => {
 
 export const createVenue = async (venueData: Partial<Venue>): Promise<Venue> => {
     try {
-        const response = await api.post<VenueResponse>('/holidaze/venues', venueData);
+        const response = await api.post<{ data: Venue }>('/holidaze/venues', venueData);
         return response.data.data;
     } catch (error) {
         console.error('Error creating venue:', error);
@@ -59,7 +59,7 @@ export const createVenue = async (venueData: Partial<Venue>): Promise<Venue> => 
 
 export const updateVenue = async (id: string, updatedData: Partial<Venue>): Promise<Venue> => {
     try {
-        const response = await api.put<VenueResponse>(`/holidaze/venues/${id}`, updatedData);
+        const response = await api.put<{ data: Venue }>(`/holidaze/venues/${id}`, updatedData);
         return response.data.data;
     } catch (error) {
         console.error('Error updating venue:', error);

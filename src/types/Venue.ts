@@ -27,15 +27,15 @@ export interface Venue {
         lng?: number;
     };
     owner?: {
-        name: string;
-        email: string;
+        name?: string;
+        email?: string;
         bio?: string,
         avatar?: {
-            url: string;
+            url?: string;
             alt?: string;
         };
         banner?: {
-            url: string;
+            url?: string;
             alt?: string;
         };
     };

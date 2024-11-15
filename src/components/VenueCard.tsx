@@ -39,7 +39,7 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, 
     const locationDisplay = `${venue.location.city ?? 'Unknown City'}, ${venue.location.country ?? 'Unknown Country'}`;
 
     // Owner information
-    const ownerName = venue.owner?.name ?? 'Unknown';
+    const ownerName = venue.owner?.name ? venue.owner.name : 'Unknown';
 
     // Determine the next available booking date
     const getNextAvailableDate = (): string => {
@@ -48,14 +48,15 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, 
             const sortedBookings = venue.bookings.sort((a, b) => dayjs(a.dateFrom).diff(dayjs(b.dateFrom)));
 
             // get the next booking period
-            const nextBooking = sortedBookings[0];
-            const dateFrom = dayjs(nextBooking.dateFrom).format('DD MMM');
-            const dateTo = dayjs(nextBooking.dateTo).format('DD MMM');
-            
-            return `${dateFrom} - ${dateTo}`;
-        } else {
-            return 'Available now';
+            const nextBooking = sortedBookings.find((booking) => dayjs(booking.dateTo).isAfter(dayjs()));
+
+            if (nextBooking) {
+                const dateFrom = dayjs(nextBooking.dateFrom).format('DD MMM');
+                const dateTo = dayjs(nextBooking.dateTo).format('DD MMM');
+                return `${dateFrom} - ${dateTo}`;
+            }
         }
+        return 'Available now';
     };
 
     const nextAvailableBooking = getNextAvailableDate();
@@ -86,9 +87,9 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, 
                         {venue.name}
                     </Typography>
 
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <StarIcon sx={{ color: 'primary.main', fontSize: '1rem' }} />
-                        <Typography variant="body2" color="text.secondary">
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <StarIcon sx={{ color: 'primary.main', fontSize: '1.275rem' }} />
+                        <Typography variant="body2" color="text.secondary" fontSize={'1rem'}>
                             {venue.rating?.toFixed(2) ?? 'No rating'}
                         </Typography>
                     </Box>

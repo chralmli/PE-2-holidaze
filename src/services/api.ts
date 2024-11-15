@@ -31,4 +31,16 @@ api.interceptors.request.use((config) => {
         return Promise.reject(error);
     }
 );
+
+// handle unauthorized response (401) globally
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response?.status === 401) {
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+        }
+        return Promise.reject(error);
+    }
+)
 export default api;

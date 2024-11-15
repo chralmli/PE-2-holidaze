@@ -52,7 +52,9 @@ const VenuesPage: React.FC = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsSmallScreen(window.innerWidth < 768);
+      const smallScreen = window.innerWidth < 768;
+      setIsSmallScreen(smallScreen);
+      setFilterByMap(!smallScreen);
     };
 
     window.addEventListener('resize', handleResize);
@@ -64,11 +66,11 @@ const VenuesPage: React.FC = () => {
   }, []);
   
   // update filterByMap state based on screen size
-  useEffect(() => {
-    if (!isSmallScreen) {
-      setFilterByMap(true);
-    }
-  }, [isSmallScreen]);
+  // useEffect(() => {
+  //   if (!isSmallScreen) {
+  //     setFilterByMap(true);
+  //   }
+  // }, [isSmallScreen]);
 
   useEffect(() => {
     const fetchVenues = async () => {
@@ -91,17 +93,43 @@ const VenuesPage: React.FC = () => {
       }
 
       setAllVenues(allFetchedVenues);
-      setVenuesInView(allFetchedVenues);
       setTotalPages(Math.ceil(allFetchedVenues.length / VENUES_PER_PAGE));
-      } catch (error) {
-        console.error('Error fetching venues:', error);
-      } finally {
-        setLoading(false);
+
+      if (!isSmallScreen && mapRef.current) {
+        setTimeout(() => {
+          handleMapUpdate(true);
+        }, 300);
+      } else {
+        setVenuesInView(allFetchedVenues);
       }
-    };
+    } catch (error) {
+      console.error('Error fetching venues:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
     fetchVenues();
-  }, []);
+  }, [isSmallScreen]);
+
+  const handleMapUpdate = debounce((isInitialLoad = false) => {
+    if (!mapRef.current) return;
+
+    setMapLoading(true);
+    const bounds = mapRef.current.getBounds();
+    
+    const venuesInBounds = allVenues.filter(
+      (venue) =>
+        venue.location &&
+        typeof venue.location.lat === 'number' &&
+        typeof venue.location.lng === 'number' &&
+        bounds.contains([venue.location.lat, venue.location.lng] as LatLngTuple)
+    );
+
+
+    setVenuesInView(venuesInBounds);
+    setMapLoading(false);
+  }, 300);
 
   // Setup the map reference when the map is ready
   useEffect(() => {
@@ -116,6 +144,42 @@ const VenuesPage: React.FC = () => {
       setVenuesInView(mapFilteredVenues);
     } 
   }, [mapDrawerOpen]);
+
+    // Map events handlers to fetch venues dynamically as the map moves or zooms
+    const MapEventsHandler = () => {
+      const map = useMap();
+  
+      useEffect(() => {
+        if (map && !mapRef.current) {
+          mapRef.current = map;
+          map.invalidateSize();
+
+          if (!isSmallScreen) {
+            setTimeout(() => {
+              handleMapUpdate(true);
+            }, 300);
+          }
+        }
+  
+        if (filterByMap) {
+          map.on('moveend', handleMapUpdate);
+          map.on('zoomend', handleMapUpdate);
+        }
+  
+        return () => {
+          map.off('moveend', handleMapUpdate);
+          map.off('zoomend', handleMapUpdate);
+        };
+      }, [map, filterByMap]);
+  
+      return null;
+    };
+
+    const handleResetFilters = () => {
+      // Reset to all venues, disable map filtering
+      setVenuesInView(allVenues);
+      setFilterByMap(false);
+    };
 
   const handleSearch = (query: string) => {
     setSearchQueryState(query);
@@ -163,56 +227,6 @@ const VenuesPage: React.FC = () => {
 
   const handleHoverVenue = (venueId: string) => {
     setHoveredVenueId(venueId);
-  };
-
-  const handleMapUpdate = debounce(() => {
-    if (!mapRef.current) return;
-
-
-    setMapLoading(true);
-    const bounds = mapRef.current.getBounds();
-    const venuesInBounds = allVenues.filter(
-      (venue) =>
-        venue.location &&
-        typeof venue.location.lat === 'number' &&
-        typeof venue.location.lng === 'number' &&
-        bounds.contains([venue.location.lat, venue.location.lng] as LatLngTuple)
-    );
-
-    setMapFilteredVenues(venuesInBounds);
-    setVenuesInView(venuesInBounds);
-
-    setMapLoading(false);
-  }, 300);
-
-  // Map events handlers to fetch venues dynamically as the map moves or zooms
-  const MapEventsHandler = () => {
-    const map = useMap();
-
-    useEffect(() => {
-      if (map && !mapRef.current) {
-        mapRef.current = map;
-        map.invalidateSize();
-      }
-
-      if (filterByMap) {
-        map.on('moveend', handleMapUpdate);
-        map.on('zoomend', handleMapUpdate);
-      }
-
-      return () => {
-        map.off('moveend', handleMapUpdate);
-        map.off('zoomend', handleMapUpdate);
-      };
-    }, [map, filterByMap]);
-
-    return null;
-  };
-
-  const handleResetFilters = () => {
-    // Reset to all venues, disable map filtering
-    setVenuesInView(allVenues);
-    setFilterByMap(false);
   };
 
   // Invalidate map size and update venues when the drawer opens
