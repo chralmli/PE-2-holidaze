@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Box, Typography, Tabs, Tab, CircularProgress } from '@mui/material';
 import useUserProfile from '../hooks/useUserProfile';
 import VenueManagement from '../components/VenueManagement';
-import UserBookings from '../components/UserBookings';
 import UserProfile from './UserProfile';
 import CreateVenueForm from '../components/CreateVenueForm';
 
@@ -62,15 +61,13 @@ const AdminDashboard: React.FC = () => {
       <Tabs value={tabIndex} onChange={handleTabChange} variant="fullWidth">
         <Tab label="Profile" />
         <Tab label="Manage Venues" />
-        <Tab label="Bookings" />
         <Tab label="Create Venue" />
       </Tabs>
 
       {/* Render components based on selected tab */}
       {tabIndex === 0 && <UserProfile />}
       {tabIndex === 1 && <VenueManagement />}
-      {tabIndex === 2 && <UserBookings />}
-      {tabIndex === 3 && <CreateVenueForm />}
+      {tabIndex === 2 && <CreateVenueForm />}
     </Box>
   )
 }

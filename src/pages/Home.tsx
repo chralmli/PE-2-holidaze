@@ -1,5 +1,5 @@
-import React from "react";
-import { Box, Typography, TextField, Button, Popover, IconButton, CardMedia } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Box, Typography, TextField, Button, Popover, IconButton, CircularProgress, Alert } from "@mui/material";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -7,7 +7,9 @@ import { Dayjs } from 'dayjs';
 import { styled } from '@mui/system';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
-import Venues from '../components/Venues';
+import VenueCard from '../components/VenueCard';
+import api from '../services/api';
+import { Venue } from '../types/Venue';
 
 // Styled component for gradient background
 const Background = styled(Box)({
@@ -17,7 +19,6 @@ const Background = styled(Box)({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    // background: 'linear-gradient(135deg, #a2d9ff, #ffb3fd)',
     background: 'linear-gradient(135deg, #34e89e, #0f3443)',
     padding: '20px',
     boxSizing: 'border-box',
@@ -52,12 +53,31 @@ const SearchContainer = styled(Box)({
 const Home: React.FC = () => {
     const [location, setLocation] = React.useState<string>("");
     const [date, setDate] = React.useState<Dayjs | null>(null);
-
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const [adults, setAdults] = React.useState<number>(1);
     const [children, setChildren] = React.useState<number>(0);
     const [bedrooms, setBedrooms] = React.useState<number>(1);
     const [bathrooms, setBathrooms] = React.useState<number>(1);
+    const [venues, setVenues] = useState<Venue[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        // fetch venues from api
+        const fetchVenues = async () => {
+            setLoading(true);
+            try {
+                const response = await api.get('/holidaze/venues');
+                setVenues(response.data.data);
+            } catch (error) {
+                console.error('Error fetching venues:', error);
+                setError('Failed to fetch venues');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchVenues();
+    }, []);
 
     const handleGuestsClick = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -223,7 +243,26 @@ const Home: React.FC = () => {
                 </ContentContainer>
             </Background>
             <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" width="100%" mt={5}>
-                <Venues limit={12} />
+                {loading ? (
+                    <CircularProgress />
+                ) : error ? (
+                    <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
+                ) : (
+                    <Box
+                        sx={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                            gap: '20px',
+                            width: '100%',
+                            maxWidth: '1200px',
+                            mt: 5,
+                        }}
+                    >
+                        {venues.map((venue) => (
+                            <VenueCard key={venue.id} venue={venue} />
+                        ))}
+                    </Box>
+                )}
             </Box>
         </>
     );

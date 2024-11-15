@@ -116,7 +116,19 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, 
 
                 {/* Action button and options */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Button color="primary" onClick={handleViewDetails} variant="contained">
+                    <Button 
+                        color="primary" 
+                        onClick={handleViewDetails} 
+                        variant="contained" 
+                        sx={{ 
+                            background: 'linear-gradient(135deg, #34e89e, #0f3443)', 
+                            color: '#fff', 
+                            textTransform: 'capitalize', 
+                            '&:hover': { 
+                                background: 'linear-gradient(135deg, #0f3443, #34e89e)',     
+                            },
+                        }}
+                    >
                         View Details
                     </Button>
 

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, Typography, CircularProgress } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, Typography, CircularProgress, Switch, FormControlLabel } from '@mui/material';
 
 interface EditProfileModalProps {
   open: boolean;
   onClose: () => void;
-  onUpdate: (updates: { bio: string; avatarUrl: string; bannerUrl: string; }) => void;
+  onUpdate: (updates: { bio: string; avatarUrl: string; bannerUrl: string; venueManager: boolean }) => void;
   updating: boolean;
   updateError: string | null;
-  initialValues: { bio: string; avatarUrl: string; bannerUrl: string; };
+  initialValues: { bio: string; avatarUrl: string; bannerUrl: string; venueManager: boolean };
 };
 
 const BIO_CHAR_LIMIT = 160;
@@ -63,6 +63,22 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ open, onClose, onUp
         fullWidth
         helperText={bioError || `${formData.bio.length}/${BIO_CHAR_LIMIT} characters`}
         error={!!bioError}
+        sx={{ marginBottom: 2 }}
+      />
+      <FormControlLabel
+        control={
+          <Switch
+            checked={formData.venueManager}
+            disabled={formData.venueManager}
+            onChange={(e) => setFormData({ ...formData, venueManager: e.target.checked })}
+            color="primary"
+          />
+        }
+        label={
+        formData.venueManager
+        ? 'You are a Venue Manager'
+        : 'Apply to become a Venue Manager'
+        }
         sx={{ marginBottom: 2 }}
       />
       {updateError && (

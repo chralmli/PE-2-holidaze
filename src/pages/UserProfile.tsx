@@ -22,7 +22,7 @@ const UserProfile: React.FC = () => {
   const handleOpenEditProfile = () => setEditProfileOpen(true);
   const handleCloseEditProfile = () => setEditProfileOpen(false);
 
-  const handleUpdateProfile = async (updates: { bio: string; avatarUrl: string; bannerUrl: string; }) => {
+  const handleUpdateProfile = async (updates: { bio: string; avatarUrl: string; bannerUrl: string; venueManager: boolean }) => {
     if (!user) return;
 
     try {
@@ -84,6 +84,7 @@ return (
         bio: profile.bio || '',
         avatarUrl: profile.avatar?.url || '',
         bannerUrl: profile.banner?.url || '',
+        venueManager: profile.venueManager || false,
       }}
     />
     
@@ -94,7 +95,7 @@ return (
       <BookingSection bookings={profile.bookings} bookingCount={profile._count?.bookings || 0} />
 
 
-      {/* Admin dashboard access */}
+      {/* Admin dashboard access
       {profile?.venueManager && location.pathname !== '/admin' && (
         <Button
           variant="contained"
@@ -104,6 +105,33 @@ return (
         >
           Go to Admin Dashboard
         </Button>
+      )} */}
+
+      {/* admin dashboard access */}
+      {location.pathname !== '/admin' && (
+        <>
+          {profile.venueManager ? (
+            <Box sx={{ marginTop: '24px' }}>
+              <Typography variant="body1" color="text.primary" sx={{ marginBottom: 1 }}>
+                You are a venue manager. Manage your venues from the admin dashboard.
+              </Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => navigate('/admin')}
+                sx={{ display: 'block', width: '100%' }}
+              >
+                Go to Admin Dashboard
+              </Button>
+            </Box>
+          ) : (
+            <Box sx={{ marginTop: '24px' }}>
+              <Typography variant='body1' color="text.secondary">
+                Interested in becoming a Venue Manager? Edit your profile to apply!
+              </Typography>
+            </Box>
+          )}
+        </>
       )}
   </Box>
   );
