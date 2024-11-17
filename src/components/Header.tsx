@@ -46,7 +46,7 @@ const Header: React.FC = () => {
     ];
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: '#204051' }}>
+    <AppBar position="sticky" sx={{ backgroundColor: '#204051' }}>
         <Toolbar>
             <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontSize: '20px', fontFamily: 'poppins', color: '#e0f7fa' }}>
             holidaze

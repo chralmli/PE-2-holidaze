@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Typography, Card, CardContent, Avatar } from '@mui/material';
+import { Box, Typography, Card, CardContent, Avatar, Grid } from '@mui/material';
+import { styled } from '@mui/system';
 
 const testimonials = [
   {
@@ -19,27 +20,45 @@ const testimonials = [
   }
 ];
 
+const StyledCard = styled(Card)({
+  maxWidth: '350px',
+  margin: '16px',
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+  borderRadius: '16px',
+  transition: 'transform 0.3s  ease',
+  '&:hover': {
+    transform: 'translateY(-5px)',
+  },
+});
+
+const StyledAvatar = styled(Avatar)({
+  width: 72,
+  height: 72,
+  marginBottom: '16px',
+  border: '4px solid #34e89e',
+});
+
 const Testimonials: React.FC = () => {
   return (
     <Box mt={8} px={3} py={5}>
-      <Typography variant="h4" sx={{ mb: 4, fontWeight: '600', textAlign: 'center' }}>
+      <Typography variant="h2" sx={{ mb: 4, fontWeight: '600', textAlign: 'center' }}>
         What our customers say
       </Typography>
-      <Box display="flex" justifyContent="center" flexWrap="wrap">
+      <Grid container spacing={3} justifyContent="center">
         {testimonials.map((testimonial, index) => (
-          <Card key={index} variant="outlined" sx={{ maxWidth: '300px', m: 2 }}>
-            <CardContent>
-              <Avatar src={testimonial.avatar} sx={{ width: 56, height: 56, mb: 2 }} />
-              <Typography variant="body2" sx={{ mb: 2 }}>
+          <StyledCard variant="outlined">
+            <CardContent sx={{ textAlign: 'center' }}>
+              <StyledAvatar src={testimonial.avatar} />
+              <Typography variant="body1" sx={{ mb: 2, fontStyle: 'italic' }}>
                 {testimonial.text}
               </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#0f3443' }}>
                 {testimonial.name}
               </Typography>
             </CardContent>
-          </Card>
+          </StyledCard>
         ))}
-      </Box>
+      </Grid>
     </Box>
   );
 };

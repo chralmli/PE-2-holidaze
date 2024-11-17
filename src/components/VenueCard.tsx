@@ -62,7 +62,7 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, 
     const nextAvailableBooking = getNextAvailableDate();
 
     return (
-        <Card variant="outlined" sx={{ mb: 4, boxShadow: 3, borderRadius: '12px', position: 'relative', transition: 'transform 0.3s ease', '&:hover': { transform: 'translateY(-5px)'} }}>
+        <Card variant="outlined" sx={{ mb: 4, boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', borderRadius: '12px', position: 'relative', transition: 'transform 0.3s ease', '&:hover': { transform: 'translateY(-5px)'} }}>
             {/* Price banner */}
             <Box sx={{ position: 'absolute', top: 0, right: 0, backgroundColor: 'primary.main', color: 'white', px: 1.5, py: 0.5, borderRadius: '0 12px 0 12px' }}>
                 <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
