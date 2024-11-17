@@ -32,8 +32,8 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, 
     };
 
     // check if `venue.media` is defined and has at least one element
-    const mediaUrl = venue.media?.length > 0 ? venue.media[0].url : defaultImage;
-    const mediaAlt = venue.media && venue.media.length > 0? venue.media[0].alt : 'Placeholder image for venue';
+    const mediaUrl = venue.media?.length > 0 && venue.media[0].url && venue.media[0].url !== 'string' ? venue.media[0].url : defaultImage;
+    const mediaAlt = venue.media && venue.media.length > 0 && venue.media[0].alt ? venue.media[0].alt : 'Placeholder image for venue';
 
     // get a concise version of the location
     const locationDisplay = `${venue.location.city ?? 'Unknown City'}, ${venue.location.country ?? 'Unknown Country'}`;
