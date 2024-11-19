@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Typography, CircularProgress, Button } from '@mui/material';
+import { Booking } from '../types/Booking';
+import { Venue } from '../types/Venue';
 import useUserProfile from '../hooks/useUserProfile';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { updateUserProfile } from '../services/userService';
@@ -8,6 +10,30 @@ import VenueSection from '../components/VenueSection';
 import BookingSection from '../components/BookingSection.tsx';
 import EditProfileModal from '../components/EditProfileModal.tsx';
 import ProfileInfo from '../components/ProfileInfo';
+
+// Define interface for profile update
+interface ProfileUpdate {
+  bio: string;
+  avatarUrl: string;
+  bannerUrl: string;
+  venueManager: boolean;
+}
+
+// Define interface for user profile
+interface UserProfileData {
+  name: string;
+  email: string;
+  bio?: string;
+  avatar?: { url: string; alt: string };
+  banner?: { url: string; alt: string };
+  venueManager: boolean;
+  venues: Venue[];
+  bookings: Booking[];
+  _count?: {
+    venues: number;
+    bookings: number;
+  };
+}
 
 const UserProfile: React.FC = () => {
   const { user, login } = useAuth();
@@ -22,7 +48,7 @@ const UserProfile: React.FC = () => {
   const handleOpenEditProfile = () => setEditProfileOpen(true);
   const handleCloseEditProfile = () => setEditProfileOpen(false);
 
-  const handleUpdateProfile = async (updates: { bio: string; avatarUrl: string; bannerUrl: string; venueManager: boolean }) => {
+  const handleUpdateProfile = async (updates: ProfileUpdate) => {
     if (!user) return;
 
     try {
@@ -69,9 +95,18 @@ if (!profile) {
 }
 
 return (
-  <Box sx={{ maxWidth: '1200px', margin: '40px auto', padding: '24px', boxShadow: '0 4px 12px rgba(0, 0, 0,  0.1)', borderRadius: '12px', backgroundColor: '#fff' }}>
+  <Box 
+      sx={{ 
+        maxWidth: '1200px', 
+        margin: '40px auto', 
+        padding: '24px', 
+        boxShadow: '0 4px 12px rgba(0, 0, 0,  0.1)', 
+        borderRadius: '12px', 
+        backgroundColor: '#fff' 
+      }}
+  >
     {/* User info section */}
-    <ProfileInfo profile={profile} onEditProfile={handleOpenEditProfile} />
+    <ProfileInfo profile={profile as UserProfileData} onEditProfile={handleOpenEditProfile} />
 
     {/* Edit profile modal */}
     <EditProfileModal
@@ -94,24 +129,11 @@ return (
       {/* Bookings section */}
       <BookingSection bookings={profile.bookings} bookingCount={profile._count?.bookings || 0} />
 
-
-      {/* Admin dashboard access
-      {profile?.venueManager && location.pathname !== '/admin' && (
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => navigate('/admin')}
-          sx={{ marginTop: '24px', display: 'block', width: '100%' }}
-        >
-          Go to Admin Dashboard
-        </Button>
-      )} */}
-
       {/* admin dashboard access */}
       {location.pathname !== '/admin' && (
-        <>
+        <Box sx={{ marginTop: '24px' }}>
           {profile.venueManager ? (
-            <Box sx={{ marginTop: '24px' }}>
+            <>
               <Typography variant="body1" color="text.primary" sx={{ marginBottom: 1 }}>
                 You are a venue manager. Manage your venues from the admin dashboard.
               </Typography>
@@ -123,15 +145,13 @@ return (
               >
                 Go to Admin Dashboard
               </Button>
-            </Box>
+            </>
           ) : (
-            <Box sx={{ marginTop: '24px' }}>
-              <Typography variant='body1' color="text.secondary">
-                Interested in becoming a Venue Manager? Edit your profile to apply!
-              </Typography>
-            </Box>
+            <Typography variant='body1' color="text.secondary">
+              Interested in becoming a Venue Manager? Edit your profile to apply!
+            </Typography>
           )}
-        </>
+        </Box>
       )}
   </Box>
   );

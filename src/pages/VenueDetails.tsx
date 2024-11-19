@@ -1,22 +1,38 @@
+import L from 'leaflet';
+
+import 'leaflet/dist/leaflet.css';
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 import React,{ useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Venue } from '../types/Venue';
-import { getVenueById } from '../services/venueService';
-import { handleDeleteVenue } from '../services/venueUtils';
-import BookingForm from '../components/BookingForm';
-import BookingsModal from '../components/BookingsModal';
-import useBookingModal from '../hooks/useBookingModal';
-import { Box, Typography, Skeleton, Rating, Button, IconButton } from '@mui/material';
-import WifiIcon from '@mui/icons-material/Wifi';
-import LocalParkingIcon from '@mui/icons-material/LocalParking';
-import FreeBreakfastIcon from "@mui/icons-material/FreeBreakfast"
-import PetsIcon from '@mui/icons-material/Pets';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import BookIcon from '@mui/icons-material/Book';
-import { styled } from '@mui/system';
+import { Box, Typography, Skeleton, Rating, IconButton } from '@mui/material';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+
+// Icons
+import { Wifi, LocalParking, FreeBreakfast, Pets, Edit, Delete, Book } from '@mui/icons-material';
+
+// Services and hooks
+import { getVenueById } from '../services/venueService';
+import { handleDeleteVenue } from '../services/venueUtils';
+import useBookingModal from '../hooks/useBookingModal';
+
+// Types
+import { Venue } from '../types/Venue';
+
+// Components
+import BookingForm from '../components/BookingForm';
+import BookingsModal from '../components/BookingsModal';
+
+import { styled } from '@mui/system';
+
+const DefaultIcon = L.icon({
+    iconUrl: icon,
+    shadowUrl: iconShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+});
+L.Marker.prototype.options.icon = DefaultIcon;
 
 const VenueDetailsContainer = styled(Box)({
     maxWidth: '1200px',
@@ -41,62 +57,72 @@ interface VenueDetailsProps {
 const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+
     const [venue, setVenue] = useState<Venue | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
     const { isModalOpen, selectedVenueId, openModal, closeModal } = useBookingModal();
 
     useEffect(() => {
-        if (id) {
-            setLoading(true);
-            getVenueById(id)
-                .then((data) => {
-                    setVenue(data);
-                })
-                .catch((error) => {
-                    console.error('Error fetching venue:', error);
-                })
-                .finally(() => {
-                    setLoading(false);
-                });
+        const fetchVenue = async () => {
+            if (!id) return;
+
+            try {
+                setLoading(true);
+                const data = await getVenueById(id);
+                setVenue(data);
+            } catch (error) {
+                console.error('Error fetching venue:', error);
+                navigate('/venues');
+            } finally {
+                setLoading(false);
             }
-        }, [id]);
+        };
+
+        fetchVenue();
+    }, [id, navigate]);
 
         const handleDeleteVenueClick = () => {
             if (!venue) return;
-            handleDeleteVenue(venue.id, () => {
-                navigate('/admin');
-            });
+            handleDeleteVenue(venue.id, () => navigate('/admin'));
         };
 
         if (loading) {
             return (
                 <VenueDetailsContainer>
-                    <Skeleton variant="text" height={80} width="60%" />
-                    <Skeleton variant="rectangular" height={400} />
-                    <Skeleton variant="text" height={40} width="80%" />
-                    <Skeleton variant="text" height={40} width="50%" />
+                    {[...Array(4)].map((_, index) => (
+                        <Skeleton
+                            key={index}
+                            variant={index === 1 ? "rectangular" : "text"}
+                            height={index === 1 ? 400 : 80}
+                            width={index === 0 ? "60%" : index === 2 ? "80%" : "50%"}
+                        />
+                    ))}
                 </VenueDetailsContainer>
             );
         }
         
-        if (!venue) {
-            return <div>Venue not found.</div>;
-        }
+        if (!venue) return <Typography variant="h6">Venue not found</Typography>
 
         // Handle unknown location values
-        const locationString = [
-            venue.location.address || 'Address not available',
-            venue.location.city || 'City not available',
-            venue.location.zip || 'Zip code not available',
-            venue.location.country || 'Country not available',
-        ].filter(Boolean).join(', ');
+        const locationDetails = [
+            venue.location.address,
+            venue.location.city,
+            venue.location.zip,
+            venue.location.country,
+        ].filter(Boolean);
 
-        const hasValidCoordinates = 
-            venue.location.lat !== undefined && 
-            venue.location.lng !== undefined && 
-            venue.location.lat !== 0 && 
-            venue.location.lng !== 0;
+        const hasValidCoordinates = (venue: Venue): boolean => {
+            return !!(
+                venue.location &&
+                typeof venue.location.lat === 'number' &&
+                typeof venue.location.lng === 'number' &&
+                venue.location.lat !== 0 &&
+                venue.location.lng !== 0 &&
+                !isNaN(venue.location.lat) &&
+                !isNaN(venue.location.lng)
+            );
+        };
 
         return (
             <VenueDetailsContainer>
@@ -117,21 +143,21 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
                             onClick={() => navigate(`/venues/edit/${venue.id}`)}
                             aria-label="edit venue"
                         >
-                            <EditIcon />
+                            <Edit />
                         </IconButton>
                         <IconButton
                             color="error"
                             onClick={handleDeleteVenueClick}
                             aria-label="delete venue"
                         >
-                            <DeleteIcon />
+                            <Delete />
                         </IconButton>
                         <IconButton
                             color="primary"
                             onClick={() => openModal(venue.id)}
                             aria-label="view bookings"
                         >
-                            <BookIcon />
+                            <Book />
                         </IconButton>
                     </Box>
                 )}
@@ -143,7 +169,7 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
 
                 {/* Media Section */}
                 <MediaContainer>
-                    {venue.media && venue.media.length > 0 ? (
+                    {venue.media?.length ? (
                         venue.media.map((mediaItem, index) => (
                             <img
                                 key={index}
@@ -163,44 +189,41 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
                 </Typography>
 
                 {/* Price and Rating */}
-                <Box sx={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                    <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
+                <Box display="flex" gap={2} alignItems="center">
+                    <Typography variant="h4" fontWeight="bold">
                         {venue.price} / night
                     </Typography>
-                    {venue.rating !== undefined && venue.rating > 0 ? (
-                        <Rating name="read-only" value={venue.rating} readOnly precision={0.5} />
-                    ) : (
-                        <Typography variant="body2" color="text.secondary">
-                            No rating available.
-                        </Typography>
-                    )}
+                    <Rating
+                        value={venue.rating || 0}
+                        precision={0.5}
+                        readOnly
+                    />
                 </Box>
 
                 {/* Max Guests */}
-                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                <Typography variant="body1" fontWeight="bold">
                     Max Guests: {venue.maxGuests}
                 </Typography>
 
                 {/* Amenities */}
                 <Box sx={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                    {venue.meta.wifi && <WifiIcon color="primary" />}
-                    {venue.meta.parking && <LocalParkingIcon color="primary" />}
-                    {venue.meta.breakfast && <FreeBreakfastIcon color="primary" />}
-                    {venue.meta.pets && <PetsIcon color="primary" />}
+                    {venue.meta.wifi && <Wifi color="primary" />}
+                    {venue.meta.parking && <LocalParking color="primary" />}
+                    {venue.meta.breakfast && <FreeBreakfast color="primary" />}
+                    {venue.meta.pets && <Pets color="primary" />}
                 </Box>
 
                 {/* Location information */}
-                <Typography variant="h5" sx={{ mt: 4, mb: 2, fontWeight: 'bold' }}>
+                <Typography variant="h5" fontWeight="bold" mt={2} mb={1}>
                     Location
                 </Typography>
-                <Typography variant="body1">
-                    {locationString}
-                </Typography>
+                <Typography variant="body1">{locationDetails}</Typography>
 
                 {/* Map Section */}
-                {hasValidCoordinates && (
+                {hasValidCoordinates(venue) && (
                     <MapContainer
-                        center={[venue.location.lat ?? 0, venue.location.lng ?? 0]}
+                    key={`${venue.location.lat}-${venue.location.lng}`}
+                        center={[venue.location.lat!, venue.location.lng!]}
                         zoom={13}
                         style={{ width: '100%', height: '400px', borderRadius: '10px' }}
                     >
@@ -208,19 +231,35 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             attribution="&copy; <a href=&quot;https://www.openstreetmap.org/copyright&quot;>OpenStreetMap</a> contributors"
                         />
-                        <Marker position={[venue.location.lat ?? 0, venue.location.lng ?? 0]}>
-                            <Popup>
-                                {venue.name}
-                                {venue.location.city}, {venue.location.country}
-                            </Popup>
-                        </Marker>
+                        {venue.location.lat && venue.location.lng && (
+                            <Marker position={[venue.location.lat!, venue.location.lng!]}>
+                                <Popup>
+                                    {venue.name}
+                                    {venue.location.city}, {venue.location.country && (
+                                        <div>{venue.location.city}, {venue.location.country}</div>
+                                    )}
+                                </Popup>
+                            </Marker>
+                        )}
                     </MapContainer>
                 )}
-                {!hasValidCoordinates && (
-                    <Typography variant="body2" color="text.secondary">
-                        Map information is not available for this venue.
-                    </Typography>
+                {!hasValidCoordinates(venue) && (
+                    <Box
+                        sx={{
+                            height: '400px',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            bgcolor: 'grey.100',
+                            alignItems: 'center',
+                            borderRadius: '10px',
+                        }}
+                    >
+                        <Typography variant="body2" color="text.secondary">
+                            Map information is not available for this venue.
+                        </Typography>
+                    </Box>
                 )}
+
                 
                 {/* Conditionally render booking form for customers */}
                 {!isManagerView && <BookingForm venueId={venue.id} />}

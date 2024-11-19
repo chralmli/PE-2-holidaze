@@ -1,104 +1,88 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Typography, TextField, Button, Tabs, Tab } from "@mui/material";
+import { Box, Typography, TextField, Button, Tabs, Tab, Snackbar, Alert } from "@mui/material";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
 import { Dayjs } from 'dayjs';
-import { styled } from '@mui/system';
-import Slider from 'react-slick';
+import debounce from 'lodash/debounce';
+
+// Components
 import GuestCounter from '../components/GuestCounter';
 import SuggestionsList from '../components/SuggestionsList';
 import VenueList from '../components/VenueList';
 import WhyBookWithUs from '../components/WhyBookWithUs';
 import Testimonials from '../components/Testimonials';
+
+// Services & Types
 import api from '../services/api';
 import { Venue } from '../types/Venue';
-import debounce from 'lodash/debounce';
-import "slick-carousel/slick/slick.css"; 
-import "slick-carousel/slick/slick-theme.css";
 
-// Styled component for gradient background
-const Background = styled(Box)({
-    height: '100vh',
-    width: '100vw',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: 'linear-gradient(135deg, #34e89e, #0f3443)',
-    padding: '20px',
-    boxSizing: 'border-box',
-});
+// Styles
+import {
+    StyledBackground,
+    ContentContainer,
+    SearchContainer,
+    SearchButton,
+    StyledTextField,
+    DatePickerWrapper
+} from '../assets/styles/HomeStyles';
 
-// Styled container for heading and search
-const ContentContainer = styled(Box)({
-    width: '100%',
-    maxWidth: '1200px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-})
-
-// Styled search container
-const SearchContainer = styled(Box)({
-    display: 'flex',
-    alignItems: 'center',
-    width: '100%',
-    maxWidth: '1200px',
-    borderRadius: '50px',
-    backgroundColor: '#ffffff',
-    padding: '6px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-    marginTop: '20px',
-    overflow: 'hidden',
-    border: '3px solid #34e89e',
-});
-
+// Theme config
 const theme = createTheme({
     components: {
         MuiInputBase: {
             styleOverrides: {
                 root: {
-                    "&:focus-within": {
-                        backgroundColor: '#f0f0f0',
+                    transition: 'background-color 0.3s ease',
+                    '&:focus-within': {
+                        backgroundColor: '#f5f5f5',
                     },
+                },
+            },
+        },
+        MuiButton: {
+            styleOverrides: {
+                root: {
+                    borderRadius: '50px',
+                    textTransform: 'none',
                 },
             },
         },
     },
 });
 
+interface TabPanelProps {
+    children?: React.ReactNode;
+    index: number;
+    value: number;
+}
+
+const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
+    <div role="tabpanel" hidden={value !== index} aria-labelledby={`venue-tab-${index}`}>
+        {value === index && children}
+    </div>
+);
+
 const sliderSettings = {
     dots: true,
     infinite: true,
     speed: 500,
-    slidesToShow: 1,
+    slidesToShow: 3,
     slidesToScroll: 1,
+    arrows: false,
     responsive: [
         {
-            breakpoint: 1200,
+            breakpoint: 960,
             settings: {
-                slidesToShow: 1,
-                slidesToScroll: 1,
-                infinite: true,
-                dots: true,
-            },
-        },
-        {
-            breakpoint: 900,
-            settings: {
-                slidesToShow: 1,
-                slidesToScroll: 1,
-                initialSlide: 1,
+                slidesToShow: 2,
             },
         },
         {
             breakpoint: 600,
             settings: {
                 slidesToShow: 1,
-                slidesToScroll: 1,
             },
         },
     ],
@@ -107,205 +91,222 @@ const sliderSettings = {
 
 // Home Component
 const Home: React.FC = () => {
-    const [location, setLocation] = useState<string>("");
-    const [date, setDate] = useState<Dayjs | null>(null);
+    // State management
+    const [searchParams, setSearchParams] = useState({
+        location: '',
+        date: null as Dayjs | null,
+        guests: 1,
+    });
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const [guests, setGuests] = useState<number>(1);
     const [venues, setVenues] = useState<Venue[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState({
+        venues: true,
+        suggestions: false,
+    });
     const [error, setError] = useState<string | null>(null);
     const [suggestions, setSuggestions] = useState<Venue[]>([]);
-    const [isSuggestionsLoading, setIsSuggestionsLoading] = useState<boolean>(false);
     const [selectedTab, setSelectedTab] = useState<number>(0);
+    const [showError, setShowError] = useState<boolean>(false);
+
     const navigate = useNavigate();
 
-    const fetchSuggestions = debounce(async (query: string) => {
-        if (query.length < 2) {
-            setSuggestions([]);
-            return;
-        }
-        setIsSuggestionsLoading(true);
-        try {
-            const response = await api.get(`/holidaze/venues/search?q=${query}`);
+    // Fetch suggestions with debounce
+    const fetchSuggestions = useCallback(
+        debounce(async (query: string) => {
+            if (query.length < 2) {
+                setSuggestions([]);
+                return;
+            }
+
+            setLoading(prev => ({ ...prev, suggestions: true }));
+            try {
+                const response = await api.get(`/holidaze/venues/search?q=${query}`);
                 setSuggestions(response.data.data);
-        } catch (error) {
-            console.error('Error fetching suggestions:', error);
-        } finally {
-            setIsSuggestionsLoading(false);
-        }
-    }, 300);
+            } catch (error) {
+                console.error('Error fetching suggestions:', error);
+                setError('Failed to fetch suggestions');
+                setShowError(true);
+            } finally {
+                setLoading(prev => ({ ...prev, suggestions: false }));
+            }
+        }, 300),
+        []
+    );
 
-    useEffect(() => {
-        fetchSuggestions(location);
-    }, [location]);
-
-    // fetch venues from api
+    // fetch venues
     useEffect(() => {
         const fetchVenues = async () => {
-            setIsLoading(true);
+            setLoading(prev => ({ ...prev, venues: true }));
             try {
                 const response = await api.get('/holidaze/venues');
                 setVenues(response.data.data);
             } catch (error) {
                 console.error('Error fetching venues:', error);
                 setError('Failed to fetch venues');
+                setShowError(true);
             } finally {
-                setIsLoading(false);
+                setLoading(prev => ({ ...prev, venues: false }));
             }
         };
+
         fetchVenues();
     }, []);
 
-    const handleTabChange = (_: React.ChangeEvent<unknown>, newValue: number) => {
-        setSelectedTab(newValue);
-    };
+    // Search suggestions when location changes
+    useEffect(() => {
+        fetchSuggestions(searchParams.location);
+    }, [searchParams.location, fetchSuggestions]);
 
     const handleSearch = () => {
-        navigate(`/venues?location=${encodeURIComponent(location)}&guests=${guests}&date=${date?.format('YYYY-MM-DD')}`);
+        const queryParams = new URLSearchParams({
+            location: searchParams.location,
+            guests: searchParams.guests.toString(),
+            ...(searchParams.date && { date: searchParams.date.format('YYYY-MM-DD') }),
+        });
+        navigate(`/venues?${queryParams.toString()}`);
+    };
+
+    const handleInputChange = (field: keyof typeof searchParams, value: any) => {
+        setSearchParams(prev => ({...prev, [field]: value }));
     };
 
     return (
-        <>
-            <Background>
+        <ThemeProvider theme={theme}>
+            <StyledBackground>
                 <ContentContainer>
                     <Typography 
                         variant="h3" 
                         component="h1" 
-                        mb={8}
-                        gutterBottom 
-                        sx={{ color: '#ffffff', fontFamily: 'poppins', fontWeight: '600', fontSize: '35px', textAlign: 'left', width: '100%' }}
+                        sx={{ 
+                            color: '#ffffff', 
+                            fontFamily: 'Poppins, sans-serif', 
+                            fontWeight: '600', 
+                            fontSize: { xs: '28px', md: '35px' },
+                            textAlign: { xs: 'center', md: 'left' },  
+                            width: '100%',
+                            mb: 8, 
+                        }}
                     >
                         Find your perfect getaway with holidaze
                     </Typography>
+
                     <SearchContainer>
-                        <ThemeProvider theme={theme}>
-                            <TextField 
-                                label="Location"
-                                variant="outlined" 
-                                value={location} 
-                                onChange={(e) => setLocation(e.target.value)} 
-                                fullWidth 
-                                sx={{ 
-                                    marginRight: '8px', 
-                                    backgroundColor: '#ffffff', 
-                                    borderTopLeftRadius: '50px',
-                                    borderBottomLeftRadius: '50px',
-                                    '& .MuiOutlinedInput-root': {
-                                        '& fieldset': {
-                                            borderTopLeftRadius: '50px',
-                                            borderBottomLeftRadius: '50px',
-                                            borderTopWidth: 0,
-                                            borderLeftWidth: 0,
-                                            borderBottomWidth: 0,
-                                            borderRadius: 0,
-                                        },
-                                        '&:hover fieldset': {
-                                            borderColor: 'transparent',
-                                        },
-                                        '&.Mui-focused fieldset': {
-                                            borderColor: 'transparent',
-                                        },
-                                    },
-                                }} 
-                            />
+                        <StyledTextField 
+                            label="Location"
+                            variant="outlined" 
+                            value={searchParams.location} 
+                            onChange={(e: any) => handleInputChange('location', e.target.value)} 
+                            fullWidth
+                        />
 
-                            {/* Suggestions list component */}
-                            <SuggestionsList
-                                suggestions={suggestions}
-                                isLoading={isSuggestionsLoading}
-                                onSelectSuggestion={(venueName: string) => {
-                                    setLocation(venueName);
-                                    setSuggestions([]);
-                                }}
-                            />
+                        {/* Suggestions list component */}
+                        <SuggestionsList
+                            suggestions={suggestions}
+                            isLoading={loading.suggestions}
+                            onSelectSuggestion={(venueName) => {
+                                handleInputChange('location', venueName);
+                                setSuggestions([]);
+                            }}
+                        />
 
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                            <DatePickerWrapper>
                                 <MobileDatePicker
                                     label="Anytime"
-                                    value={date}
-                                    onChange={(newValue) => setDate(newValue)}
-                                    closeOnSelect={true}
+                                    value={searchParams.date}
+                                    onChange={(newValue) => handleInputChange('date', newValue)}
+                                    closeOnSelect
+                                    disablePast
                                     slotProps={{
                                         textField: {
                                             fullWidth: true,
-                                            InputProps: {
-                                                readOnly: true,
-                                            },
-                                            sx: {
-                                                marginRight: '8px', 
-                                                backgroundColor: '#ffffff',
-                                                '& .MuiInputBase-input': {
-                                                    cursor: 'pointer',
-                                                },
-                                                '& .MuiOutlinedInput-root': {
-                                                    '& fieldset': {
-                                                        borderTopWidth: 0,
-                                                        borderLeftWidth: 0,
-                                                        borderBottomWidth: 0,
-                                                        borderRadius: 0,
-                                                    },
-                                                    '&:hover fieldset': {
-                                                        borderColor: 'transparent',
-                                                    },
-                                                    '&.Mui-focused fieldset': {
-                                                        borderColor: 'transparent',
-                                                    },
-                                                },
-                                            }
-                                        }
-                                    }}
-                                    disablePast // Prevent selecting past dates
+                                            InputProps: { readOnly: true },
+                                        },
+                                    }} 
                                 />
-                            </LocalizationProvider>
+                            </DatePickerWrapper>
+                        </LocalizationProvider>
 
-                            {/* Guest counter component */}
-                            <GuestCounter
-                                guests={guests}
-                                setGuests={setGuests}
-                                anchorEl={anchorEl}
-                                setAnchorEl={setAnchorEl}
-                            />
-                        </ThemeProvider>
-                        <Button 
+                        {/* Guest counter component */}
+                        <GuestCounter
+                            guests={searchParams.guests}
+                            setGuests={(value) => handleInputChange('guests', value)}
+                            anchorEl={anchorEl}
+                            setAnchorEl={setAnchorEl}
+                        />
+
+                        <SearchButton
                             variant="contained"
-                            color="gradient"
-                            size="large" 
-                            sx={{ minWidth: '100px', borderRadius: '50px', padding: '14px', color: '#ffffff', fontSize: '16px', textTransform: 'capitalize' }}
                             onClick={handleSearch}
+                            disabled={loading.venues}
                         >
                             Search
-                        </Button>
+                        </SearchButton>
                     </SearchContainer>
                 </ContentContainer>
-            </Background>
+            </StyledBackground>
 
-            {/* Popular/Best Rated Venues Section */}
-            <Box px={3} maxWidth="1200px" margin="auto" sx={{ marginTop: '20px' }}>
-                <Tabs value={selectedTab} onChange={handleTabChange} centered>
+            <Box
+                px={3}
+                maxWidth="1200px"
+                margin="auto"
+                sx={{ mt: 4 }}
+            >
+                <Tabs
+                    value={selectedTab}
+                    onChange={(_, value) => setSelectedTab(value)}
+                    centered
+                    sx={{
+                        '& .MuiTabs-indicator': {
+                            backgroundColor: '#34e89e',
+                        },
+                    }}
+                >
                     <Tab label="Most popular venues" />
                     <Tab label="Best rated venues" />
                 </Tabs>
-                    <Slider {...sliderSettings}>
-                        <VenueList
-                            fetchMode={selectedTab === 0 ? "popular" : "bestRated"}
-                            venues={venues}
-                            isLoading={false}
-                            onHover={() => {}}
-                            hoveredVenueId={null}
-                        />
-                    </Slider>
+
+                <TabPanel value={selectedTab} index={0}>
+                    <VenueList
+                        fetchMode="popular"
+                        venues={venues}
+                        isLoading={loading.venues}
+                        onHover={() => {}}
+                        hoveredVenueId={null}
+                        useSlider
+                    />
+                </TabPanel>
+
+                <TabPanel value={selectedTab} index={1}>
+                    <VenueList
+                        fetchMode="bestRated"
+                        venues={venues}
+                        isLoading={loading.venues}
+                        onHover={() => {}}
+                        hoveredVenueId={null}
+                        useSlider
+                    />
+                </TabPanel>
             </Box>
 
-            {/* Why Book with us section */}
             <WhyBookWithUs />
-
-            {/* Testimonials section */}
             <Testimonials />
 
-            {/* Footer */}
-            
-        </>
+            <Snackbar
+                open={showError}
+                autoHideDuration={6000}
+                onClose={() => setShowError(false)}
+            >
+                <Alert
+                    onClose={() => setShowError(false)}
+                    severity="error"
+                    sx={{ width: '100%' }}
+                >
+                    {error}
+                </Alert>
+            </Snackbar>
+        </ThemeProvider>
     );
 };
-
+        
 export default Home;

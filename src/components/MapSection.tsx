@@ -1,9 +1,10 @@
-import React,{ useEffect } from 'react';
+import React,{ useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
-import L, { LatLngTuple } from 'leaflet';
+import L, { LatLngTuple, DivIcon } from 'leaflet';
 import { Venue } from '../types/Venue';
-import { Typography, CircularProgress } from '@mui/material';
+import { Typography, CircularProgress, Box } from '@mui/material';
+import { styled } from '@mui/system';
 
 interface MapSectionProps {
   venues: Venue[];
@@ -12,20 +13,54 @@ interface MapSectionProps {
   onMapUpdate?: (bounds: L.LatLngBounds) => void;
 }
 
-interface MapEventsHandlerProps {
-  onMapUpdate?: (bounds: L.LatLngBounds) => void;
-}
+const StyledMapOverlay = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  zIndex: 1000,
+  backgroundColor: 'rgba(255, 255, 255, 0.8)',
+  padding: theme.spacing(2),
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+}));
 
-const MapEventsHandler: React.FC<MapEventsHandlerProps> = ({ onMapUpdate }) => {
+const createMarkerIcon = (price: number, isHovered: boolean): DivIcon => {
+  return L.divIcon({
+    className: 'custom-div-icon',
+    html: `
+      <div style="
+        background: ${isHovered ? '#34e89e' : 'white'};
+        padding: 8px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        border: 2px solid ${isHovered ? '#2bc67f' : 'white'};
+      ">
+        <span style="
+          font-weight: bold;
+          color: ${isHovered? 'white' : '#00000'};
+        ">
+          ${price.toLocaleString('no-NO')} NOK
+        </span>
+      </div>
+      `,
+      iconSize: [60, 40],
+      iconAnchor: [30, 40],
+  });
+};
+
+const MapEventsHandler: React.FC<{ onMapUpdate?: (bounds: L.LatLngBounds) => void}> = ({
+  onMapUpdate
+}) => {
   const map = useMap();
 
   useEffect(() => {
-    if (!map) return;
+    if (!map || !onMapUpdate) return;
 
     const handleMapChange = () => {
-      if (onMapUpdate) {
-        onMapUpdate(map.getBounds());
-      }
+      onMapUpdate(map.getBounds());
     };
 
     map.on('moveend', handleMapChange);
@@ -42,7 +77,12 @@ const MapEventsHandler: React.FC<MapEventsHandlerProps> = ({ onMapUpdate }) => {
 
 const MapSection: React.FC<MapSectionProps> = ({ venues, hoveredVenueId, mapLoading, onMapUpdate }) => {
   const getVenueCoordinates = (venue: Venue): LatLngTuple | null => {
-    if (venue.location && typeof venue.location.lat === 'number' && typeof venue.location.lng === 'number') {
+    if (
+      venue.location?.lat != null &&
+      venue.location?.lng != null &&
+      !isNaN(venue.location.lat) &&
+      !isNaN(venue.location.lng)
+    ) {
       return [venue.location.lat, venue.location.lng];
     }
     return null;
@@ -54,73 +94,70 @@ const MapSection: React.FC<MapSectionProps> = ({ venues, hoveredVenueId, mapLoad
     [85, 180],
   ];
 
+  const validVenues = useMemo(() =>
+    venues.filter(venue => getVenueCoordinates(venue) !== null),
+    [venues]
+  );
 
   return (
-    <MapContainer center={[63.4305, 10.3951]} 
-      zoom={5} 
-      minZoom={4} 
-      maxZoom={16} 
-      style={{ 
-        height: '100%', 
-        width: '100%' 
-        }}
-        maxBounds={maxBounds}
-        maxBoundsViscosity={1.0}
-      >
-      <TileLayer
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-      />
-      <MarkerClusterGroup>
-        {venues.map((venue) => {
-          const coordinates = getVenueCoordinates(venue);
-          if (!coordinates) return null;
-
-          return (
-            <Marker
-              key={venue.id}
-              position={coordinates}
-              icon={L.divIcon({
-                className: 'custom-div-icon',
-                html: `<div style="background: ${
-                  hoveredVenueId === venue.id ? '#34e89e' : 'white'
-                }; padding: 5px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.3);">
-                        <span style="font-weight: bold;">${venue.price.toLocaleString('no-NO')} NOK</span>
-                      </div>`,
-                iconSize: [50, 50],
-              })}
-            >
-              <Popup>
-                <Typography variant="body2" fontWeight="bold">
-                  {venue.name}
-                </Typography>
-                <Typography variant="body2">
-                  {venue.location.city || 'Unknown City'}, {venue.location.country || 'Unknown Country'}
-                </Typography>
-              </Popup>
-            </Marker>
-          );
-        })}
-      </MarkerClusterGroup>
-      <MapEventsHandler onMapUpdate={onMapUpdate} />
-      {mapLoading && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 1000,
-            backgroundColor: 'rgba(255, 255, 255, 0.8)',
-            padding: '10px',
-            borderRadius: '10px',
+    <Box sx={{ position: 'relative', height: '100%', width: '100%' }}>
+      <MapContainer 
+        center={[63.4305, 10.3951]} 
+        zoom={5} 
+        minZoom={4} 
+        maxZoom={16} 
+        style={{ 
+          height: '100%', 
+          width: '100%' 
           }}
+          maxBounds={maxBounds}
+          maxBoundsViscosity={1.0}
         >
-          <CircularProgress />
-        </div>
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        <MarkerClusterGroup>
+          {validVenues.map((venue) => {
+            const coordinates = getVenueCoordinates(venue);
+            if (!coordinates) return null;
+
+            return (
+              <Marker
+                key={venue.id}
+                position={coordinates}
+                icon={createMarkerIcon(venue.price, hoveredVenueId === venue.id )}
+              >
+                <Popup>
+                  <Box sx={{ p: 1 }}>
+                    <Typography variant="body2" fontWeight="bold">
+                      {venue.name}
+                    </Typography>
+                    <Typography variant="body2">
+                      {venue.location.city || 'Unknown City'}, {' '}
+                      {venue.location.country || 'Unknown Country'}
+                    </Typography>
+                    <Typography variant="body2" color="primary.main" mt={1}>
+                      {venue.price.toLocaleString('no-NO')} NOK / night
+                    </Typography>
+                  </Box>
+                </Popup>
+              </Marker>
+            );
+          })}
+        </MarkerClusterGroup>
+        <MapEventsHandler onMapUpdate={onMapUpdate} />
+      </MapContainer>
+
+      {mapLoading && (
+        <StyledMapOverlay>
+          <CircularProgress size={24} />
+          <Typography variant="body2">Loading venues...</Typography>
+        </StyledMapOverlay>
       )}
-    </MapContainer>
+    </Box>
   );
 };
+
 
 export default MapSection;

@@ -140,6 +140,7 @@ const handleMapUpdate = (bounds: L.LatLngBounds) => {
             isLoading={isLoading} 
             onHover={setHoveredVenueId} 
             hoveredVenueId={hoveredVenueId} 
+            useSlider={false}
           />
         
         <Stack spacing={2} alignItems="center" mt={4}>

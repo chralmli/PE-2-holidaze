@@ -3,6 +3,9 @@ import { Grid, Box, Typography, CircularProgress } from '@mui/material';
 import VenueCard from './VenueCard';
 import { Venue } from '../types/Venue';
 import api from '../services/api';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
 interface VenueListProps {
   venues: Venue[];
@@ -10,6 +13,7 @@ interface VenueListProps {
   onHover: (venueId: string | null) => void;
   hoveredVenueId: string | null;
   fetchMode?: 'popular' | 'bestRated';
+  useSlider?: boolean;
 }
 
 const VenueList: React.FC<VenueListProps> = ({ 
@@ -18,6 +22,7 @@ const VenueList: React.FC<VenueListProps> = ({
   onHover = () => {},
   hoveredVenueId = null,
   fetchMode,
+  useSlider = false,
  }) => {
   const [fetchedVenues, setFetchedVenues] = useState<Venue[]>([]);
   const [fetchingVenues, setFetchingVenues] = useState<boolean>(false);
@@ -80,6 +85,45 @@ const VenueList: React.FC<VenueListProps> = ({
     );
   }
 
+  // Slider settings
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 3,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 5000,
+    responsive: [
+      {
+        breakpoint: 960,
+        settings: {
+          slidesToShow: 2,
+        },
+      },
+      {
+        breakpoint: 600,
+        settings: {
+          slidesToShow: 1,
+        },
+      },
+    ],
+  };
+
+  // If the slider is needed, wrap the venue cards in a slider component
+  if (useSlider) {
+    return (
+      <Slider {...sliderSettings}>
+        {displayVenues.map((venue) => (
+          <Box key={venue.id} px={2}>
+            <VenueCard venue={venue} />
+          </Box>
+        ))}
+      </Slider>
+    );
+  }
+
+  // Default grid display for venues
   return (
     <Grid container spacing={4} sx={{ width: '100%' }}>
       {displayVenues.map((venue) => (

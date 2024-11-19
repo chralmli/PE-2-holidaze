@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Button, TextField, Typography } from '@mui/material';
+import { Box, Button, TextField, Typography, Alert, Skeleton } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
@@ -12,17 +12,23 @@ import '../assets/styles/CustomDatePicker.css'
 
 interface BookingFormProps {
   venueId: string;
+  maxGuests?: number;
 }
 
 dayjs.extend(isSameOrBefore);
 
-const BookingForm: React.FC<BookingFormProps> = ({ venueId }) => {
+const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests = 1 }) => {
   const { isLoggedIn, user } = useAuth();
   const navigate = useNavigate();
+
+  // Form state
   const [dateFrom, setDateFrom ] = useState<Dayjs | null>(null);
   const [dateTo, setDateTo ] = useState<Dayjs | null>(null);
   const [guests, setGuests ] = useState<number>(1);
+
+  // UI state
   const [loading, setLoading] = useState<boolean>(false);
+  const [initialLoading, setInitialLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [bookedDates, setBookedDates] = useState<Set<string>>(new Set());
@@ -33,8 +39,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId }) => {
         if (!venueId) return;
   
         try {
+          setInitialLoading(true);
           const venue = await getVenueById(venueId);
-          console.log('Bookings fetched', venue);
 
           const bookedDatesSet = new Set<string>();
 
@@ -42,104 +48,112 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId }) => {
             const start = dayjs(booking.dateFrom);
             const end = dayjs(booking.dateTo)
 
+            // Skip invalid bookings without console errors
               if (!start.isValid() || !end.isValid() || end.isBefore(start)) {
-                console.error('Skipping invalid booking:', booking);
+                return;
+              }
+
+              // Only process future bookings or current bookings
+              if (end.isBefore(dayjs(), 'day')) {
                 return;
               }
 
               let currentDate = start;
-              let dayCount = 0;
-
-              // Limit the iteration to avoid infinite loop
-              while (currentDate.isSameOrBefore(end) && dayCount < 365) {
+              for (let i = 0; currentDate.isSameOrBefore(end) && i < 365; i++) {
                 bookedDatesSet.add(currentDate.format('YYYY-MM-DD'));
                 currentDate = currentDate.add(1, 'day');
-                dayCount++;
-              }
-
-              // Prevent infinite loops or too large sets
-              if (dayCount >= 365) {
-                console.warn('Exceeded 365 days while processing booked dates. Check booking data.');
               }
             });
 
-            console.log('Booked dates set:', bookedDatesSet);
             setBookedDates(bookedDatesSet);
           } catch (error) {
-            console.error('Error fetching booked dates:', error);
+            // Only log unexpected errors
+            if (error instanceof Error) {
+              console.error('Error fetching venue availability:', error.message);
+            }
+            setErrorMessage('Failed to load availability. Please try again later.');
+          } finally {
+            setInitialLoading(false);
           }
         };
 
         fetchBookedDates();
       }, [venueId]);
 
-      const disableDate = useCallback(
-        (date: Dayjs) => {
-          const formattedDate = date.format('YYYY-MM-DD');
-          const isDisabled = bookedDates.has(formattedDate);
+      const disableDate = useCallback((date: Dayjs) => {
+          return bookedDates.has(date.format('YYYY-MM-DD'));
+          }, [bookedDates]);
 
-          console.log('Checking if date should be disabled:', formattedDate, 'Is date disabled', isDisabled, 'Current booked dates:', Array.from(bookedDates).slice(0, 10));
-          return isDisabled;
-        },
-        [bookedDates]
-      );
+          const validateBooking = (): boolean => {
+            if (!isLoggedIn) {
+              navigate('/login');
+              return false;
+            }
+
+            if (!dateFrom || !dateTo) {
+              setErrorMessage('Please select both start and end dates.');
+              return false;
+            }
+
+            if (guests <= 0 || guests > maxGuests) {
+              setErrorMessage(`Please select between 1 and ${maxGuests} guests.`);
+              return false;
+            }
+
+            if (dateTo.isBefore(dateFrom)) {
+              setErrorMessage('The end date must be after the start date.');
+              return false;
+            }
+
+            // Check for date conflicts
+            let currentDate = dateFrom;
+            while (currentDate.isSameOrBefore(dateTo)) {
+              if (bookedDates.has(currentDate.format('YYYY-MM-DD'))) {
+                setErrorMessage('One or more of the selected dates are already booked. Please choose different dates.');
+                return false;
+              }
+              currentDate = currentDate.add(1, 'day');
+            }
+
+            return true;
+          };
     
 
   const handleBookingSubmit = async () => {
-    // if user is not logged in, redirect them to the login page
-    if (!isLoggedIn) {
-      navigate('/login');
-      return;
-    }
-
-    // validate form inputs
-    if (!dateFrom || !dateTo || guests <= 0) {
-      setErrorMessage('Please fill in all required fields with valid data.');
-      return;
-    }
-
-    if (dateTo.isBefore(dateFrom)) {
-      setErrorMessage('The end date must be after the start date.');
-      return;
-    }
-
-    // Check if the selected dates overlap with existing bookings
-    let currentDate = dateFrom;
-    while (currentDate.isSameOrBefore(dateTo)) {
-      if (bookedDates.has(currentDate.format('YYYY-MM-DD'))) {
-        setErrorMessage('One or more of the selected dates are already booked. Please choose different dates.');
-        return;
-      }
-      currentDate = currentDate.add(1, 'day');
-    }
-
-    console.log("Booking Venue ID:", venueId);
-
     try {
+      if (!validateBooking()) return;
+      if (!dateFrom || !dateTo) return;
+
       setLoading(true);
       setErrorMessage(null);
       setSuccessMessage(null);
 
-      const bookingData = {
-        dateFrom: dateFrom.toISOString().split('T')[0],
-        dateTo: dateTo.toISOString().split('T')[0],
+      await createBooking({
+        dateFrom: dateFrom?.format('YYYY-MM-DD'),
+        dateTo: dateTo.format('YYYY-MM-DD'),
         guests,
         venueId,
-      };
+      });
 
-      await createBooking(bookingData);
       setSuccessMessage('Booking created successfully!');
+      setTimeout(() => navigate('/profile'), 2000);
     } catch (error: any) {
-      if (error.response && error.response.status === 409) {
-        setErrorMessage('The selected dates are already booked.');
-      } else {
-        console.error('Error creating booking:', error);
-        setErrorMessage('Failed to create booking. Please try again later.');
-      }
+      const message = error.response?.status === 409
+      ? 'These dates are no longer available.'
+      : 'Failed to create booking. Please try again.';
+      setErrorMessage(message);
     } finally {
       setLoading(false);
     }
   };
+
+  if (initialLoading) {
+    return (
+      <Box sx={{ padding: '20px' }}>
+        <Skeleton variant="rectangular" height={300} />
+      </Box>
+    );
+  }
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -152,66 +166,71 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId }) => {
         border: '1px solid #e0e0e0',
         borderRadius: '10px',
         marginTop: '20px',
+        backgroundColor: 'background.paper',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.05',
       }}
-      >
-        <Typography variant="h5">Book this venue</Typography>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Typography variant="body1">From:</Typography>
+    >
+      <Typography variant="h5">Book your stay</Typography>
+
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
           <DatePicker
-            label="Select start date"
+            label="Check-in date"
             value={dateFrom}
             onChange={(newValue) => {
-               setDateFrom(newValue)
+               setDateFrom(newValue);
                if (dateTo && newValue && dateTo.isBefore(newValue)) {
                 setDateTo(null);
                }
             }}
             disablePast
             shouldDisableDate={disableDate}
-            slotProps={{
-              textField: {
-                fullWidth: true,
-                helperText: errorMessage,
-              },
-            }}
+            sx={{ flex: 1, minWidth: '200px' }}
           />
-        </Box>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <Typography variant="body1">To:</Typography>
+
           <DatePicker
-            label="Select end date"
+            label="Check-out date"
             value={dateTo}
-            onChange={(newValue) => setDateTo(newValue)}
+            onChange={setDateTo}
             disablePast
             minDate={dateFrom || undefined}
             shouldDisableDate={disableDate}
-            slotProps={{
-              textField: {
-                fullWidth: true,
-                helperText: errorMessage,
-              },
-            }}
+            sx={{ flex: 1, minWidth: '200px' }}
           />
         </Box>
+
         <TextField
           label="Number of guests"
           type="number"
           value={guests}
           onChange={(e) => setGuests(Number(e.target.value))}
+          inputProps={{ min: 1, max: maxGuests }}
+          helperText={`Maximum ${maxGuests} guests allowe`}
         />
+
         {errorMessage && (
-          <Typography color="error">{errorMessage}</Typography>
+          <Alert severity="error" onClose={() => setErrorMessage(null)}>
+            <Typography color="error">{errorMessage}</Typography>
+          </Alert>
         )}
+
         {successMessage && (
-          <Typography color="primary">{successMessage}</Typography>
+          <Alert severity="success" onClose={() => setSuccessMessage(null)}>
+            <Typography color="primary">{successMessage}</Typography>
+          </Alert>
         )}
+
         <Button
           variant="contained"
           color="primary"
           onClick={handleBookingSubmit}
           disabled={loading}
+          sx={{
+            py: 1.5,
+            fontSize: '1.1rem',
+            fontWeight: 'bold',
+          }}
         >
-          {loading ? 'Booking...' : 'Book now'}
+          {loading ? 'Booking...' : 'Confirm Booking'}
         </Button>
       </Box>
     </LocalizationProvider>    

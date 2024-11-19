@@ -30,7 +30,7 @@ const WhyBookWithUs: React.FC = () => {
       py={5} 
       bgcolor="#f5f5f5"
     >
-      <Typography variant='h2' sx={{ mb: 4, fontWeight: '600', textAlign: 'center', fontFamily: 'Poppins' }}>
+      <Typography variant='h4' sx={{ mb: 4, fontWeight: '600', textAlign: 'center', fontFamily: 'Poppins' }}>
         Why book with us?
       </Typography>
       <Grid container spacing={3}>
@@ -38,7 +38,7 @@ const WhyBookWithUs: React.FC = () => {
           <Grid item xs={12} md={4} key={index} sx={{ display: 'flex', justifyContent: 'center' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', textAlign: 'left', width: '100%', maxWidth: '300px' }} gap={2}>
               <StyledIcon>{advantage.icon}</StyledIcon>
-              <Typography variant="h5" sx={{ fontWeight: '500' }}>
+              <Typography variant="h6" sx={{ fontWeight: '500' }}>
                 {advantage.text}
               </Typography>
             </Box>
