@@ -1,17 +1,22 @@
-import React, { useState } from 'react';
-import { Box, Typography, CircularProgress, Button } from '@mui/material';
+import React, { useState, useCallback } from 'react';
+import { Box, Typography, CircularProgress, Button, Alert, Divider, Container, Skeleton } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import { Dashboard as DashboardIcon } from '@mui/icons-material';
 import { Booking } from '../types/Booking';
 import { Venue } from '../types/Venue';
 import useUserProfile from '../hooks/useUserProfile';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { updateUserProfile } from '../services/userService';
 import { useAuth } from '../context/AuthContext';
+
+
+// components
 import VenueSection from '../components/VenueSection';
 import BookingSection from '../components/BookingSection.tsx';
 import EditProfileModal from '../components/EditProfileModal.tsx';
 import ProfileInfo from '../components/ProfileInfo';
 
-// Define interface for profile update
+// Types
 interface ProfileUpdate {
   bio: string;
   avatarUrl: string;
@@ -19,7 +24,6 @@ interface ProfileUpdate {
   venueManager: boolean;
 }
 
-// Define interface for user profile
 interface UserProfileData {
   name: string;
   email: string;
@@ -35,6 +39,39 @@ interface UserProfileData {
   };
 }
 
+// Styled components
+const ProfileContainer = styled(Container)(({ theme }) => ({
+  maxWidth: '1200px',
+  margin: '40px auto',
+  padding: theme.spacing(3),
+  [theme.breakpoints.down('sm')]: {
+    padding: theme.spacing(2),
+  },
+}));
+
+const ProfileCard = styled(Box)(({ theme }) => ({
+  backgroundColor: '#fff',
+  borderRadius: theme.shape.borderRadius * 1.5,
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+  overflow: 'hidden',
+}));
+
+const Section = styled(Box)(({ theme }) => ({
+  padding: theme.spacing(3),
+  '&:not(:last-child)': {
+    borderBottom: `1px solid ${theme.palette.divider}`,
+  },
+}));
+
+const DashboardButton = styled(Button)(({ theme }) => ({
+  background: 'linear-gradient(135deg, #34e89e, #0f3443)',
+  color: '#fff',
+  padding: theme.spacing(1.5, 3),
+  '&:hover': {
+    background: 'linear-gradient(135deg, #0f3443, #34e89e)',
+  },
+}));
+
 const UserProfile: React.FC = () => {
   const { user, login } = useAuth();
   const { profile, loading, error } = useUserProfile();
@@ -45,73 +82,115 @@ const UserProfile: React.FC = () => {
   const location = useLocation();
 
   // Handlers for edit profile modal
-  const handleOpenEditProfile = () => setEditProfileOpen(true);
-  const handleCloseEditProfile = () => setEditProfileOpen(false);
-
-  const handleUpdateProfile = async (updates: ProfileUpdate) => {
+  const handleUpdateProfile = useCallback(async (updates: ProfileUpdate) => {
     if (!user) return;
-
+    
     try {
       setUpdating(true);
       setUpdateError(null);
-
-      // Update user profile
       await updateUserProfile(user.name, updates);
-
-      // update the Auth context and localStorage
       login({ ...user, ...updates });
-
-      handleCloseEditProfile();
+      setEditProfileOpen(false);
     } catch (error) {
       console.error('Error updating user profile:', error);
       setUpdateError('Failed to update user profile');
     } finally {
       setUpdating(false);
     }
-  };
+  }, [user, login]);
 
-if (loading) {
-  return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-      <CircularProgress />
-    </Box>
-  );
-}
+
+  if (loading) {
+    return (
+      <ProfileContainer>
+        <ProfileCard>
+          <Skeleton variant="rectangular" height={200} />
+          <Box sx={{ p: 3 }}>
+            <Skeleton variant="circular" width={80} height={80} sx={{ mb: 2 }} />
+            <Skeleton variant="text" width="60%" />
+            <Skeleton variant="text" width="40%" />
+          </Box>
+        </ProfileCard>
+      </ProfileContainer>
+    );
+  }
 
 if (error) {
   return (
-    <Box sx={{ textAlign: 'center', marginTop: '20px' }}>
-      <Typography variant="body1" color="error">{error}</Typography>
-    </Box>
-  )
+    <ProfileContainer>
+      <Alert severity="error" sx={{ mb: 2, borderRadius: 2}}>{error}</Alert>
+    </ProfileContainer>
+  );
 }
 
 if (!profile) {
   return (
-    <Box sx={{ textAlign: 'center', marginTop: '20px' }}>
-      <Typography variant="body1">User profile not found.</Typography>
-    </Box>
+    <ProfileContainer>
+      <Alert severity="info" sx={{ mb: 2, borderRadius: 2, }}>
+        Profile not found. Please try logging in again.
+      </Alert>
+    </ProfileContainer>
   );
 }
 
 return (
-  <Box 
-      sx={{ 
-        maxWidth: '1200px', 
-        margin: '40px auto', 
-        padding: '24px', 
-        boxShadow: '0 4px 12px rgba(0, 0, 0,  0.1)', 
-        borderRadius: '12px', 
-        backgroundColor: '#fff' 
-      }}
-  >
-    {/* User info section */}
-    <ProfileInfo profile={profile as UserProfileData} onEditProfile={handleOpenEditProfile} />
+  <ProfileContainer>
+    <ProfileCard>
+      <Section>
+        <ProfileInfo
+          profile={profile as UserProfileData}
+          onEditProfile={() => setEditProfileOpen(true)}
+        />
+      </Section>
 
-    {/* Edit profile modal */}
+      <Divider />
+
+      <Section>
+        <VenueSection
+          venues={profile.venues}
+          venueCount={profile._count?.venues || 0}
+          isLoading={loading}
+        />
+      </Section>
+
+      <Divider />
+
+      <Section>
+        <BookingSection
+          bookings={profile.bookings}
+          bookingCount={profile._count?.bookings || 0}
+          isLoading={loading}
+        />
+      </Section>
+
+      {location.pathname !== '/admin' && (
+        <Section>
+          {profile.venueManager ? (
+            <Box>
+              <Typography variant="body1" color="text.primary" sx={{ mb: 2 }}>
+                You are a venue manager. Access your management dashboard to handle your venues.
+              </Typography>
+              <DashboardButton
+                variant="contained"
+                startIcon={<DashboardIcon />}
+                onClick={() => navigate('/admin')}
+                fullWidth
+              >
+                Open Admin Dashboard
+              </DashboardButton>
+            </Box>
+          ) : (
+            <Alert severity='info' sx={{ borderRadius: 2 }}>
+              Interested in becoming a Venue Manager? Edit your profile to apply!
+            </Alert>
+          )}
+        </Section>
+      )}
+    </ProfileCard>
+
     <EditProfileModal
       open={editProfileOpen}
-      onClose={handleCloseEditProfile}
+      onClose={() => setEditProfileOpen(false)}
       onUpdate={handleUpdateProfile}
       updating={updating}
       updateError={updateError}
@@ -122,39 +201,8 @@ return (
         venueManager: profile.venueManager || false,
       }}
     />
-    
-      {/* Venues section */}
-      <VenueSection venues={profile.venues} venueCount={profile._count?.venues || 0} />
-
-      {/* Bookings section */}
-      <BookingSection bookings={profile.bookings} bookingCount={profile._count?.bookings || 0} />
-
-      {/* admin dashboard access */}
-      {location.pathname !== '/admin' && (
-        <Box sx={{ marginTop: '24px' }}>
-          {profile.venueManager ? (
-            <>
-              <Typography variant="body1" color="text.primary" sx={{ marginBottom: 1 }}>
-                You are a venue manager. Manage your venues from the admin dashboard.
-              </Typography>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => navigate('/admin')}
-                sx={{ display: 'block', width: '100%' }}
-              >
-                Go to Admin Dashboard
-              </Button>
-            </>
-          ) : (
-            <Typography variant='body1' color="text.secondary">
-              Interested in becoming a Venue Manager? Edit your profile to apply!
-            </Typography>
-          )}
-        </Box>
-      )}
-  </Box>
-  );
+  </ProfileContainer>
+);
 };
 
 

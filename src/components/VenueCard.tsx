@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { SxProps, Theme } from '@mui/system';
 import { Card, CardContent, Typography, Button, CardMedia, Box, IconButton, Menu, MenuItem, Chip, Skeleton, styled} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Venue } from '../types/Venue'
@@ -19,6 +20,7 @@ type VenueCardProps = {
     onEdit?: (venueId: string) => void;
     isManagerView?: boolean;
     isLoading?: boolean;
+    sx?: SxProps<Theme>;
 };
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -64,7 +66,7 @@ const AmenityIcon = styled(Box)({
     color: 'rgba(0,0,0,0.6)',
 });
 
-const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, onEdit, isManagerView = false, isLoading = false }) => {
+const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, onEdit, sx, isManagerView = false, isLoading = false }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const navigate = useNavigate();
 
@@ -101,7 +103,7 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, 
 
     if (isLoading) {
         return (
-            <StyledCard>
+            <StyledCard sx={{ ...sx }}>
                 <Skeleton variant="rectangular" height={200} />
                 <CardContent>
                     <Skeleton variant="text" width="60%" height={32} />

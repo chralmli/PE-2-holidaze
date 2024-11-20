@@ -51,7 +51,7 @@ const StyledAvatar = styled(Avatar)({
 const Testimonials: React.FC = () => {
   return (
     <Box mt={8} px={3} py={5}>
-      <Typography variant="h4" sx={{ mb: 4, fontWeight: '600', textAlign: 'center' }}>
+      <Typography variant="h4" sx={{ mb: 4, fontWeight: '500', textAlign: 'center', fontFamily: 'Poppins' }}>
         What our customers say
       </Typography>
       <Grid container spacing={3} justifyContent="center">

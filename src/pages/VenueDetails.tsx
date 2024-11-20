@@ -15,7 +15,6 @@ import { Wifi, LocalParking, FreeBreakfast, Pets, Edit, Delete, Book } from '@mu
 // Services and hooks
 import { getVenueById } from '../services/venueService';
 import { handleDeleteVenue } from '../services/venueUtils';
-import useBookingModal from '../hooks/useBookingModal';
 
 // Types
 import { Venue } from '../types/Venue';
@@ -44,11 +43,57 @@ const VenueDetailsContainer = styled(Box)({
     position: 'relative'
 });
 
-const MediaContainer = styled(Box)({
-    display: 'flex',
+const ImageGallery = styled(Box)(({ theme }) => ({
+    display: 'grid',
+    gridTemplateColumns:'repeat(auto-fill, minmax(300px, 1fr))',
     gap: '16px',
-    flexWrap: 'wrap',
-});
+    borderRadius: '10px',
+    overflow: 'hidden',
+    '& img': {
+        width: '100%',
+        height: '300px',
+        objectFit: 'cover',
+        transition: 'transform 0.3s ease',
+        '&:hover': {
+            transform:'scale(1.02)',
+        },
+    },
+    // First image is larger
+    '& img:first-of-type': {
+        gridColumn: '1 / -1',
+        height: '400px',
+    },
+    [theme.breakpoints.down('sm')]: {
+        '& img': {
+            height: '250px',
+        },
+        '& img:first-of-type': {
+            height: '300px',
+        },
+    },
+}));
+
+const InfoSection = styled(Box)(({ theme }) => ({
+    display: 'grid',
+    gridTemplateColumns: '2fr 1fr',
+    gap: theme.spacing(4),
+    [theme.breakpoints.down('md')]: {
+        gridTemplateColumns: '1fr',
+    },
+}));
+
+const AmenityChip = styled(Box)(({ theme }) => ({
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    padding: theme.spacing(1, 2),
+    borderRadius: theme.spacing(2),
+    backgroundColor: theme.palette.grey[50],
+    '& .MuiSvgIcon-root': {
+        color: theme.palette.primary.main,
+    },
+}));
+
 
 interface VenueDetailsProps {
     isManagerView?: boolean;
@@ -59,9 +104,8 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
     const navigate = useNavigate();
 
     const [venue, setVenue] = useState<Venue | null>(null);
+    const [isBookingsModalOpen, setIsBookingsModalOpen] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
-
-    const { isModalOpen, selectedVenueId, openModal, closeModal } = useBookingModal();
 
     useEffect(() => {
         const fetchVenue = async () => {
@@ -133,9 +177,12 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
                             position: 'absolute',
                             top: '20px',
                             right: '20px',
+                            zIndex: 1,
                             mt: 4, 
                             display: 'flex', 
-                            gap: 2 
+                            gap: 1,
+                            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                            borderRadius: 2, 
                         }}
                     >
                         <IconButton
@@ -154,7 +201,7 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
                         </IconButton>
                         <IconButton
                             color="primary"
-                            onClick={() => openModal(venue.id)}
+                            onClick={() => setIsBookingsModalOpen(true)}
                             aria-label="view bookings"
                         >
                             <Book />
@@ -162,119 +209,170 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
                     </Box>
                 )}
 
-                {/* Venue Name */}
-                <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
-                    {venue.name}
-                </Typography>
-
-                {/* Media Section */}
-                <MediaContainer>
-                    {venue.media?.length ? (
+                {/* Media gallery */}
+                <ImageGallery>
+                    {venue.media.length ? (
                         venue.media.map((mediaItem, index) => (
                             <img
                                 key={index}
                                 src={mediaItem.url}
-                                alt={mediaItem.alt}
-                                style={{ width: '100%', maxWidth: '400px', borderRadius: '10px' }}
+                                alt={mediaItem.alt || `Venue image ${index +1}`}
+                                loading={index === 0 ? 'eager' : 'lazy'}
                             />
                         ))
                     ) : (
-                        <Typography variant="body1">No images available.</Typography>
+                        <Box
+                            sx={{
+                                height: '400px',
+                                backgroundColor: 'grey.100',
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                            }}
+                        >
+                            <Typography variant="body1" color="text.secondary">
+                                No images available.
+                            </Typography>
+                        </Box>
                     )}
-                </MediaContainer>
+                </ImageGallery>
 
-                {/* Description */}
-                <Typography variant="body1" sx={{ lineHeight: 1.6 }}>
-                    {venue.description}
-                </Typography>
-
-                {/* Price and Rating */}
-                <Box display="flex" gap={2} alignItems="center">
-                    <Typography variant="h4" fontWeight="bold">
-                        {venue.price} / night
-                    </Typography>
-                    <Rating
-                        value={venue.rating || 0}
-                        precision={0.5}
-                        readOnly
-                    />
-                </Box>
-
-                {/* Max Guests */}
-                <Typography variant="body1" fontWeight="bold">
-                    Max Guests: {venue.maxGuests}
-                </Typography>
-
-                {/* Amenities */}
-                <Box sx={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                    {venue.meta.wifi && <Wifi color="primary" />}
-                    {venue.meta.parking && <LocalParking color="primary" />}
-                    {venue.meta.breakfast && <FreeBreakfast color="primary" />}
-                    {venue.meta.pets && <Pets color="primary" />}
-                </Box>
-
-                {/* Location information */}
-                <Typography variant="h5" fontWeight="bold" mt={2} mb={1}>
-                    Location
-                </Typography>
-                <Typography variant="body1">{locationDetails}</Typography>
-
-                {/* Map Section */}
-                {hasValidCoordinates(venue) && (
-                    <MapContainer
-                    key={`${venue.location.lat}-${venue.location.lng}`}
-                        center={[venue.location.lat!, venue.location.lng!]}
-                        zoom={13}
-                        style={{ width: '100%', height: '400px', borderRadius: '10px' }}
-                    >
-                        <TileLayer
-                            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            attribution="&copy; <a href=&quot;https://www.openstreetmap.org/copyright&quot;>OpenStreetMap</a> contributors"
-                        />
-                        {venue.location.lat && venue.location.lng && (
-                            <Marker position={[venue.location.lat!, venue.location.lng!]}>
-                                <Popup>
-                                    {venue.name}
-                                    {venue.location.city}, {venue.location.country && (
-                                        <div>{venue.location.city}, {venue.location.country}</div>
-                                    )}
-                                </Popup>
-                            </Marker>
-                        )}
-                    </MapContainer>
-                )}
-                {!hasValidCoordinates(venue) && (
-                    <Box
-                        sx={{
-                            height: '400px',
-                            display: 'flex',
-                            justifyContent: 'center',
-                            bgcolor: 'grey.100',
-                            alignItems: 'center',
-                            borderRadius: '10px',
-                        }}
-                    >
-                        <Typography variant="body2" color="text.secondary">
-                            Map information is not available for this venue.
+                {/* Main content */}
+                <InfoSection>
+                    {/* Left column - Main info */}
+                    <Box>
+                        <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 2 }}>
+                            {venue.name}
                         </Typography>
+
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                            <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                                {venue.price.toLocaleString('no-NO')} NOK
+                            </Typography>
+                            <Typography variant="subtitle1" color="text.secondary">
+                                per night
+                            </Typography>
+                        </Box>
+
+                        <Box sx={{ mb: 4 }}>
+                            <Typography variant="h6" sx={{ mb: 2 }}>
+                                About this venue
+                            </Typography>
+                            <Typography variant="body1" sx={{ lineHeight: 1.8, color: 'text.secondary' }}>
+                                {venue.description}
+                            </Typography>    
+                        </Box>
+
+                        {/* Amenities */}
+                        <Typography variant="h6" sx={{ mb: 2 }}>
+                            Amenities
+                        </Typography>
+                        <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 4 }}>
+                            {venue.meta.wifi && (
+                                <AmenityChip>
+                                    <Wifi /> Wifi
+                                </AmenityChip>
+                            )}
+                            {venue.meta.parking && (
+                                <AmenityChip>
+                                    <LocalParking /> Parking
+                                </AmenityChip>
+                            )}
+                            {venue.meta.breakfast && (
+                                <AmenityChip>
+                                    <FreeBreakfast /> Breakfast
+                                </AmenityChip>
+                            )}
+                            {venue.meta.pets && (
+                                <AmenityChip>
+                                    <Pets /> Pets
+                                </AmenityChip>
+                            )}
+                        </Box>
+
+                        {/* Location */}
+                        <Typography variant="h6" sx={{ mb: 2 }}>
+                            Location
+                        </Typography>
+                        <Typography variant="body1" sx={{ mb: 3 }}>
+                            {locationDetails.join(', ')}
+                        </Typography>
+
+                        {/* Map */}
+                        {hasValidCoordinates(venue) ? (
+                            <MapContainer
+                                key={`${venue.location.lat}-${venue.location.lng}`}
+                                center={[venue.location.lat!, venue.location.lng!]}
+                                zoom={13}
+                                style={{ height: '400px', borderRadius: '12px', marginBottom: '24px' }}
+                            >
+                                <TileLayer
+                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                    attribution="&copy; <a href=&quot;https://www.openstreetmap.org/copyright&quot;>OpenStreetMap</a> contributors"
+                                />
+                                <Marker position={[venue.location.lat!, venue.location.lng!]}>
+                                    <Popup>
+                                        <strong>{venue.name}</strong>
+                                        <br />
+                                        {venue.location.city}, {venue.location.country}
+                                    </Popup>
+                                </Marker>
+                            </MapContainer>
+                        ) : (
+                            <Box
+                                sx={{
+                                    height: '400px',
+                                    backgroundColor: 'grey.100',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    borderRadius: '12px',
+                                }}
+                            >
+                                <Typography variant="body1" color="text.secondary">
+                                    Map information is not available
+                                </Typography>
+                            </Box>
+                        )}
                     </Box>
-                )}
 
-                
-                {/* Conditionally render booking form for customers */}
-                {!isManagerView && <BookingForm venueId={venue.id} />}
+                    {/* Right column - Booking & Details */}
+                    <Box sx={{ position: 'sticky', top: 24 }}>
+                        <Box sx={{
+                            padding: 3,
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            borderRadius: 2,
+                            backgroundColor: 'background.paper',
+                            mb: 3,
+                        }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                                <Rating value={venue.rating || 0} precision={0.5} readOnly />
+                                <Typography variant="body2" color="text.secondary">
+                                    {venue.rating ? `${venue.rating.toFixed(1)} rating` : 'No ratings yet'}
+                                </Typography>
+                            </Box>
 
+                            <Typography variant="body1" sx={{ mb: 2 }}>
+                                Up to {venue.maxGuests} guests
+                            </Typography>
 
-                {/* Bookings Modal */}
-                {selectedVenueId && (
+                            {!isManagerView && <BookingForm venueId={venue.id} />}
+                        </Box>
+                    </Box>
+                </InfoSection>
+
+                {/* Bookings modal for venue managers */}
+                {isManagerView && venue.bookings && (
                     <BookingsModal
-                        venueId={selectedVenueId}
-                        open={isModalOpen}
-                        onClose={closeModal}
+                        venueId={venue.id}
+                        open={isBookingsModalOpen}
+                        onClose={() => setIsBookingsModalOpen(false)}
                     />
                 )}
             </VenueDetailsContainer>
         );
-    };
+};
+                
 
 export default VenueDetails;

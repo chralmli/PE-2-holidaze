@@ -82,54 +82,81 @@ const VenuesPage: React.FC = () => {
     fetchVenues();
   }, []);
 
+  const handleSearch = (query: string) => {
+    setIsLoading(true);
+    const searchTerm = query.toLowerCase();
+    const searchedVenues = allVenues.filter((venue) => (
+      venue.name.toLowerCase().includes(searchTerm) ||
+      venue.location.city?.toLowerCase().includes(searchTerm) ||
+      venue.location.country?.toLowerCase().includes(searchTerm)
+    ));
 
-// filter the venues according to filter settings
-const filteredVenues = isLoading ? [] : venuesInView.filter((venue) => {
-  return (
-    venue.name.toLowerCase().includes('') &&
-    (filterState.price === 'any' || venue.price <= Number(filterState.price)) &&
-    (filterState.guests === 'any' || venue.maxGuests >= Number(filterState.guests)) &&
-    (filterState.rating === 'any' || (venue.rating ?? 0) >= Number(filterState.rating)) &&
-    (!filterState.wifi ||  venue.meta?.wifi) &&
-    (!filterState.parking || venue.meta?.parking) &&
-    (!filterState.breakfast || venue.meta?.breakfast) &&
-    (!filterState.pets || venue.meta?.pets)
-  );
-});
+    setVenuesInView(searchedVenues);
+    setCurrentPage(1);
+    setIsLoading(false);
+  };
 
-const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
-  setCurrentPage(value);
-};
+  // filter the venues according to filter settings
+  const filteredVenues = isLoading ? [] : venuesInView.filter((venue) => {
+    return (
+      venue.name.toLowerCase().includes('') &&
+      (filterState.price === 'any' || venue.price <= Number(filterState.price)) &&
+      (filterState.guests === 'any' || venue.maxGuests >= Number(filterState.guests)) &&
+      (filterState.rating === 'any' || (venue.rating ?? 0) >= Number(filterState.rating)) &&
+      (!filterState.wifi ||  venue.meta?.wifi) &&
+      (!filterState.parking || venue.meta?.parking) &&
+      (!filterState.breakfast || venue.meta?.breakfast) &&
+      (!filterState.pets || venue.meta?.pets)
+    );
+  });
+
+  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
+    setCurrentPage(value);
+  };
 
 
-const handleOpenFilterModal = () => setFilterModalOpen(true);
-const handleCloseFilterModal = () => setFilterModalOpen(false);
+  const handleOpenFilterModal = () => setFilterModalOpen(true);
+  const handleCloseFilterModal = () => setFilterModalOpen(false);
 
-// Triggered when the map is updated (zoom or pan)
-const handleMapUpdate = (bounds: L.LatLngBounds) => {
-  if (!bounds) return;
+  // Triggered when the map is updated (zoom or pan)
+  const handleMapUpdate = (bounds: L.LatLngBounds) => {
+    if (!bounds) return;
 
-  setIsLoading(true);
+    setIsLoading(true);
 
-  const venuesInBounds = allVenues.filter(
-    (venue) =>
-      venue.location &&
-    typeof venue.location.lat === 'number' &&
-    typeof venue.location.lng === 'number' &&
-    bounds.contains([venue.location.lat, venue.location.lng])
-  );
+    const venuesInBounds = allVenues.filter(
+      (venue) =>
+        venue.location &&
+      typeof venue.location.lat === 'number' &&
+      typeof venue.location.lng === 'number' &&
+      bounds.contains([venue.location.lat, venue.location.lng])
+    );
 
-  setVenuesInView(venuesInBounds);
-  setIsLoading(false);
-};
+    setVenuesInView(venuesInBounds);
+    setIsLoading(false);
+  };
 
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
       {/* Venue Cards Section */}
       <Box sx={{ width: { md: '60%', xs: '100%'}, height: '100vh', overflowY: 'auto', padding: '20px', backgroundColor: '#f5f5f5', }}>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, mb: 2, }}>
-          <SearchBar onSearch={(query) => console.log(query)} />
-          <Button variant="outlined" onClick={handleOpenFilterModal}>
+          <SearchBar
+            onSearch={handleSearch}
+            isLoading={isLoading}
+            autoSearch
+            placeholder="Search by name, city, or country..."
+          />
+          <Button 
+            variant="outlined" 
+            onClick={handleOpenFilterModal}
+            sx={{
+              height: '56px',
+              minWidth: '100px',
+              borderRadius: '28px',
+              mt: 2,
+            }}
+          >
             Filters
           </Button>
         </Box>
