@@ -166,7 +166,7 @@ const VenuesPage: React.FC = () => {
             onClick={handleOpenFilterModal}
             startIcon={<FilterIcon />}
             sx={{
-              height: '48px',
+              height: '56px',
               minWidth: '100px',
               borderRadius: '24px',
               borderColor: '#34e89e',
@@ -175,6 +175,7 @@ const VenuesPage: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               gap: 1,
+              mt: 2,
               '&:hover': {
                 borderColor: '#0f3443',
                 backgroundColor: '#f5f5f5',
