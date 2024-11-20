@@ -12,7 +12,7 @@ import Box from '@mui/material/Box';
 
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../context/AuthContext';
 
@@ -20,6 +20,7 @@ const Header: React.FC = () => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    const navigate = useNavigate();
 
     const { isLoggedIn, user, logout } = useAuth();
 
@@ -72,7 +73,20 @@ const Header: React.FC = () => {
                             loggedInMenuItems
                         )}
                         <Box sx={{ width: '100%', height: '1px', backgroundColor: '#e0e0e0', my: 1 }} />
-                        <MenuItem onClick={handleMenuClose} component={Link} to="/post-accommodation">Post your own accommodation</MenuItem>  
+                        <MenuItem 
+                            onClick={() => {
+                                handleMenuClose();
+                                if (!isLoggedIn) {
+                                    navigate('/login');
+                                } else if (user?.venueManager) {
+                                    navigate('/admin');
+                                } else {
+                                    navigate('/profile');
+                                }
+                            }} 
+                        >
+                            Post your own accommodation
+                        </MenuItem>  
                     </Menu>
                 </>
             ) : (

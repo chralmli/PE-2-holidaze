@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { CssBaseline, GlobalStyles } from '@mui/material';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { CssBaseline, GlobalStyles, Alert, Snackbar } from '@mui/material';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import Home from './pages/Home';
+import PostAccommodationRoute from './pages/PostAccommodationRoute';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import VenueDetails from './pages/VenueDetails';
@@ -19,6 +20,8 @@ import { UserProfileResponse } from './types/User';
 const App: React.FC = () => {
   const { isLoggedIn, user } = useAuth();
   const [profile, setProfile] = useState<UserProfileResponse['data'] | null>(null);
+  const [showMessage, setShowMessage] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -64,6 +67,7 @@ const App: React.FC = () => {
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/post-accommodation" element={<PostAccommodationRoute />} />
           <Route path="/venues" element={<VenuesPage />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
@@ -92,6 +96,22 @@ const App: React.FC = () => {
             }
           />
         </Routes>
+
+        {/* Message for non-venue managers */}
+        <Snackbar
+          open={showMessage}
+          autoHideDuration={6000}
+          onClose={() => setShowMessage(false)}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        >
+        <Alert
+          severity="info"
+          onClose={() => setShowMessage(false)}
+          sx={{ width: '100%' }}
+        >
+          To post accommodations, you need to become a venue manager. You can enable this in your profile settings.
+        </Alert>
+      </Snackbar>
       </>
     </ThemeProvider>
   );
