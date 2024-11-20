@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Typography, TextField, Button, Tabs, Tab, Snackbar, Alert } from "@mui/material";
+import { Box, Typography, Tabs, Tab, Snackbar, Alert } from "@mui/material";
+import SearchIcon from '@mui/icons-material/Search';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
-import { Dayjs } from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import debounce from 'lodash/debounce';
 
 // Components
@@ -24,9 +25,13 @@ import {
     StyledBackground,
     ContentContainer,
     SearchContainer,
+    SearchWrapper,
+    SearchBox,
     SearchButton,
     StyledTextField,
-    DatePickerWrapper
+    DatePickerWrapper,
+    GuestCounterWrapper,
+    SearchButtonWrapper,
 } from '../assets/styles/HomeStyles';
 
 // Theme config
@@ -94,7 +99,8 @@ const Home: React.FC = () => {
     // State management
     const [searchParams, setSearchParams] = useState({
         location: '',
-        date: null as Dayjs | null,
+        checkIn: null as Dayjs | null,
+        checkOut: null as Dayjs | null,
         guests: 1,
     });
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -157,11 +163,37 @@ const Home: React.FC = () => {
         fetchSuggestions(searchParams.location);
     }, [searchParams.location, fetchSuggestions]);
 
+    const validateDates = () => {
+        if (!searchParams.checkIn || !searchParams.checkOut) {
+            setError('Please select both check-in and check-out dates');
+            setShowError(true);
+            return false;
+        }
+
+        if (searchParams.checkOut.isBefore(searchParams.checkIn)) {
+            setError('Check-out date must be after check-in date');
+            setShowError(true);
+            return false;
+        }
+
+        // Dont allow bookings more than a year in advance
+        if (searchParams.checkIn.isAfter(dayjs().add(1, 'year'))) {
+            setError('Bookings cannot be made more than a year in advance');
+            setShowError(true);
+            return false;
+        }
+
+        return true;
+    };
+
     const handleSearch = () => {
+        if (!validateDates()) return;
+
         const queryParams = new URLSearchParams({
             location: searchParams.location,
             guests: searchParams.guests.toString(),
-            ...(searchParams.date && { date: searchParams.date.format('YYYY-MM-DD') }),
+            ...(searchParams.checkIn && { checkIn: searchParams.checkIn.format('YYYY-MM-DD') }),
+            ...(searchParams.checkOut && { checkOut: searchParams.checkOut.format('YYYY-MM-DD') }),
         });
         navigate(`/venues?${queryParams.toString()}`);
     };
@@ -184,64 +216,99 @@ const Home: React.FC = () => {
                             fontSize: { xs: '28px', md: '35px' },
                             textAlign: { xs: 'center', md: 'left' },  
                             width: '100%',
-                            mb: 8, 
+                            mb: { xs: 4, md: 8 }, 
                         }}
                     >
                         Find your perfect getaway with holidaze
                     </Typography>
 
                     <SearchContainer>
-                        <StyledTextField 
-                            label="Location"
-                            variant="outlined" 
-                            value={searchParams.location} 
-                            onChange={(e: any) => handleInputChange('location', e.target.value)} 
-                            fullWidth
-                        />
-
-                        {/* Suggestions list component */}
-                        <SuggestionsList
-                            suggestions={suggestions}
-                            isLoading={loading.suggestions}
-                            onSelectSuggestion={(venueName) => {
-                                handleInputChange('location', venueName);
-                                setSuggestions([]);
-                            }}
-                        />
-
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DatePickerWrapper>
-                                <MobileDatePicker
-                                    label="Anytime"
-                                    value={searchParams.date}
-                                    onChange={(newValue) => handleInputChange('date', newValue)}
-                                    closeOnSelect
-                                    disablePast
-                                    slotProps={{
-                                        textField: {
-                                            fullWidth: true,
-                                            InputProps: { readOnly: true },
-                                        },
-                                    }} 
+                        <SearchWrapper>
+                            <SearchBox>
+                                <StyledTextField 
+                                    label="Location"
+                                    variant="outlined" 
+                                    value={searchParams.location} 
+                                    onChange={(e: any) => handleInputChange('location', e.target.value)} 
+                                    fullWidth
                                 />
+
+                                {/* Suggestions list component */}
+                                <SuggestionsList
+                                    suggestions={suggestions}
+                                    isLoading={loading.suggestions}
+                                    onSelectSuggestion={(venueName) => {
+                                        handleInputChange('location', venueName);
+                                        setSuggestions([]);
+                                    }}
+                                />
+                            </SearchBox>
+
+                            <DatePickerWrapper>
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <MobileDatePicker
+                                        sx={{ borderBottom: '1px solid rgba(0,0,0, 0.12)' }}
+                                        label="Check-in"
+                                        value={searchParams.checkIn}
+                                        onChange={(newValue) => {
+                                            handleInputChange('checkIn', newValue);
+                                            // If check-out is before check-in, reset
+                                            if (searchParams.checkOut && newValue && searchParams.checkOut.isBefore(newValue)) {
+                                                handleInputChange('checkOut', null);
+                                            }
+                                        }}
+                                        closeOnSelect
+                                        disablePast
+                                        slotProps={{
+                                            textField: {
+                                                fullWidth: true,
+                                                placeholder: 'Add check-in date',
+                                            },
+                                        }} 
+                                    />
+                                    <MobileDatePicker
+                                        sx={{ borderBottom: '1px solid rgba(0,0,0, 0.12)' }}
+                                        label="Check-out"
+                                        value={searchParams.checkOut}
+                                        onChange={(newValue) => handleInputChange('checkOut', newValue)}
+                                        closeOnSelect
+                                        disablePast
+                                        minDate={searchParams.checkIn || undefined}
+                                        slotProps={{
+                                            textField: {
+                                                fullWidth: true,
+                                                placeholder: 'Add check-out date',
+                                            },
+                                        }}
+                                    />
+                                </LocalizationProvider>
                             </DatePickerWrapper>
-                        </LocalizationProvider>
 
-                        {/* Guest counter component */}
-                        <GuestCounter
-                            guests={searchParams.guests}
-                            setGuests={(value) => handleInputChange('guests', value)}
-                            anchorEl={anchorEl}
-                            setAnchorEl={setAnchorEl}
-                        />
+                            {/* Guest counter component */}
+                            <GuestCounterWrapper>
+                                <GuestCounter
+                                    guests={searchParams.guests}
+                                    setGuests={(value) => handleInputChange('guests', value)}
+                                    anchorEl={anchorEl}
+                                    setAnchorEl={setAnchorEl}
+                                />
+                            </GuestCounterWrapper>
+                        </SearchWrapper>
 
-                        <SearchButton
-                            variant="contained"
-                            onClick={handleSearch}
-                            disabled={loading.venues}
-                        >
-                            Search
-                        </SearchButton>
+                        <SearchButtonWrapper>
+                            <SearchButton
+                                variant="contained"
+                                onClick={handleSearch}
+                                disabled={loading.venues}
+                                startIcon={<SearchIcon />}
+                                sx={{
+                                    height: '48px',
+                                    minWidth: { xs: '100%', md: '120px' },
+                                }}
+                            >
+                                Search
+                            </SearchButton>
+                        </SearchButtonWrapper>
                     </SearchContainer>
                 </ContentContainer>
             </StyledBackground>

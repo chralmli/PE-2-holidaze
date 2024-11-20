@@ -8,6 +8,7 @@ import MapSection from '../components/MapSection';
 import { getAllVenues } from '../services/venueService';
 import { Venue } from '../types/Venue';
 import MapRoundedIcon from '@mui/icons-material/MapRounded';
+import { FilterList as FilterIcon } from '@mui/icons-material';
 import L from 'leaflet';
 
 const VenuesPage: React.FC = () => {
@@ -139,22 +140,50 @@ const VenuesPage: React.FC = () => {
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
       {/* Venue Cards Section */}
-      <Box sx={{ width: { md: '60%', xs: '100%'}, height: '100vh', overflowY: 'auto', padding: '20px', backgroundColor: '#f5f5f5', }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, mb: 2, }}>
-          <SearchBar
-            onSearch={handleSearch}
-            isLoading={isLoading}
-            autoSearch
-            placeholder="Search by name, city, or country..."
-          />
+      <Box sx={{ width: { lg: '60%', sm: '100%'}, height: '100vh', overflowY: 'auto', padding: '20px', backgroundColor: '#f5f5f5', }}>
+        <Box 
+          sx={{ 
+            display: 'flex',
+            alignItems: 'center',
+            maxWidth: '100%',
+            gap: 2,
+            mb: 3,
+            px: { xs: 1, sm: 2 },
+            mx: 'auto',
+          }}
+        >
+          <Box sx={{ flex: 1, maxWidth:'calc(100% - 120px)' }}>
+            <SearchBar
+              onSearch={handleSearch}
+              isLoading={isLoading}
+              autoSearch
+              placeholder="Search by name, city, or country..."
+            />
+          </Box>
+          
           <Button 
             variant="outlined" 
             onClick={handleOpenFilterModal}
+            startIcon={<FilterIcon />}
             sx={{
-              height: '56px',
+              height: '48px',
               minWidth: '100px',
-              borderRadius: '28px',
-              mt: 2,
+              borderRadius: '24px',
+              borderColor: '#34e89e',
+              backgroundColor: 'white',
+              transition: 'all 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1,
+              '&:hover': {
+                borderColor: '#0f3443',
+                backgroundColor: '#f5f5f5',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+              },
+              '& .MuiSvgIcon-root': {
+                fonSize: '1.2rem',
+              },
             }}
           >
             Filters
@@ -181,7 +210,7 @@ const VenuesPage: React.FC = () => {
           flex: 1,
           position: 'sticky',
           top: 0,
-          width: { md: '40%', xs: '0'},
+          width: { md: '40%', sm: '0'},
           zIndex: 1,
           display: { xs: 'none', md: 'block' },
         }}
@@ -215,9 +244,12 @@ const VenuesPage: React.FC = () => {
               width: '40px',
               px: 2,
               fontSize: '0.875rem',
-              bgcolor: '#ff7043',
+              backgroundColor: '#34e89e',
+              color: 'white',
               '&:hover': {
-                bgcolor: '#1e88e5',
+                backgroundColor: '#0f3443',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
               },
             }}
             >

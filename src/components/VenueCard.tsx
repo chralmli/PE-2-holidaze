@@ -59,12 +59,12 @@ const GradientButton = styled(Button)(({ theme }) => ({
     },
 }));
 
-const AmenityIcon = styled(Box)({
+const AmenityIcon = styled(Box)(({ theme }) => ({
     display: 'flex',
     alignItems: 'center',
     gap: 4,
     color: 'rgba(0,0,0,0.6)',
-});
+}));
 
 const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, onEdit, sx, isManagerView = false, isLoading = false }) => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -79,8 +79,8 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, 
     }, [venue.media]);
 
     const locationDisplay = useMemo(() => {
-        const city = venue.location?.city || 'Unknown City';
-        const country = venue.location?.country || 'Unknown Country';
+        const city = venue.location?.city || 'City';
+        const country = venue.location?.country || 'Country';
         return `${city}, ${country}`;
     }, [venue.location]);
 
@@ -145,8 +145,21 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, 
             >
                 {/* Venue name & rating */}
                 <Box sx={{ flex: 1}}>
-                    <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
-                        <Typography variant="h5" fontWeight="bold" gutterBottom>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1 }}>
+                        <Typography 
+                            variant="h5" 
+                            fontWeight="bold" 
+                            gutterBottom
+                            sx={{
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                lineHeight: 1.2,
+                                height: '2.4em',
+                            }}
+                            >
                             {venue.name}
                         </Typography>
 
@@ -166,7 +179,16 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, 
                 </Typography>
 
                 {/* Amenities */}
-                <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap', minHeight: '48px' }}>
+                <Box 
+                    sx={{  
+                        display: 'flex',
+                        gap: 1,
+                        mt: 1,
+                        mb: 2, 
+                        flexWrap: 'wrap', 
+                        minHeight: '48px',
+                    }}
+                >
                     {venue.meta?.wifi && <AmenityIcon><WifiIcon fontSize="small" /> Wifi</AmenityIcon>}
                     {venue.meta?.parking && <AmenityIcon><LocalParkingIcon fontSize="small" /> Parking</AmenityIcon>}
                     {venue.meta?.breakfast && <AmenityIcon><BreakfastIcon fontSize="small" /> Breakfast</AmenityIcon>}

@@ -125,7 +125,7 @@ const VenueList: React.FC<VenueListProps> = ({
 
   // Default grid display for venues
   return (
-    <Grid container spacing={4} sx={{ width: '100%' }}>
+    <Grid container spacing={4}>
       {displayVenues.map((venue) => (
         <Grid
           item
