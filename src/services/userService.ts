@@ -33,21 +33,6 @@ export const updateUserProfile = async (
       },
     };
 
-    // // construct the data object to send only the provided fields
-    // const updateData: { bio?: string; avatar?: { url: string; alt: string }; banner?: { url: string; alt: string } } = {};
-
-    // if (updates.bio) {
-    //   updateData.bio = updates.bio;
-    // }
-
-    // if (updates.avatarUrl) {
-    //   updateData.avatar = { url: updates.avatarUrl, alt: 'User avatar' };
-    // }
-
-    // if (updates.bannerUrl) {
-    //   updateData.banner = { url: updates.bannerUrl, alt: 'User banner' };
-    // }
-
     await api.put(`/holidaze/profiles/${userName}`, payload);
   } catch (error) {
     console.error('Error updating user profile:', error);

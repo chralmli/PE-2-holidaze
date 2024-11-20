@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build --env-file .env.production",
-    "build:netlify": "vite build --env-file .env.production",
+    "dev": "vite --env-file .env.development",
+    "build": "tsc && vite build --mode .env.production",
+    "build:netlify": "vite build --mode .env.production",
     "lint": "eslint .",
     "clean": "rm -rf dist",
     "prebuild": "npm run clean",
