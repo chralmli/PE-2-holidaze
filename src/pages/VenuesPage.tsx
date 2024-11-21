@@ -182,6 +182,24 @@ const VenuesPage: React.FC = () => {
     setIsLoading(false);
   };
 
+    //  useEffect to prevent scroll on map container
+    useEffect(() => {
+      const preventScroll = (e: WheelEvent) => {
+        if (e.target instanceof Element &&
+          (e.target.closest('.leaflet-container') ||
+           e.target.classList.contains('leaflet-container'))) {
+            e.preventDefault();
+           }
+        };
+  
+        // Add event listener with passive: false to allow preventDefault()
+        window.addEventListener('wheel', preventScroll, { passive: false });
+  
+        return () => {
+          window.removeEventListener('wheel', preventScroll);
+        };
+    }, []);
+
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
       {/* Venue Cards Section */}
@@ -266,6 +284,17 @@ const VenuesPage: React.FC = () => {
           width: { md: '40%', sm: '0'},
           zIndex: 1,
           display: { xs: 'none', md: 'block' },
+          '& .leaflet-container': {
+            height: '100vh !important',
+            position: 'sticky !important',
+            top: 0,
+            // Ensure map controls are always visible
+            '& .leaflet-control-container': {
+              position: 'fixed',
+              zIndex: 1000,
+            },
+            userSelect: 'none',
+          },
         }}
       >
         <MapSection venues={allVenues} hoveredVenueId={hoveredVenueId} mapLoading={isLoading} onMapUpdate={handleMapUpdate} />
@@ -320,6 +349,14 @@ const VenuesPage: React.FC = () => {
           '& .MuiDrawer-paper': {
             height: '60vh',
             width: '100%',
+            '& .leaflet-container': {
+              height: '100% !important',
+              // Ensure map controls are visible in drawer
+              '& .leaflet-control-container': {
+                position: 'absolute',
+                zIndex: 1000,
+              },
+            },
           },
         }}
       >

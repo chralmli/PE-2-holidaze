@@ -92,6 +92,7 @@ const Register: React.FC = () => {
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
+                mb: 8,
                 minHeight: 'calc(100vh - 8rem - 64px)',
             }}
         >
