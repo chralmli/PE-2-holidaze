@@ -1,9 +1,24 @@
+/**
+ * Login.tsx
+ * 
+ * A component for user login. This allows users to enter their email and password credentials and gain access to their account.
+ */
+
 import React from 'react';
 import { TextField, Button, Container, Typography, Box } from '@mui/material';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * Login Component
+ * 
+ * A React functional component that renders a login form. Users provide their email and password credentials to authenticate
+ * and access their account. After a successful login, the user is redirected to the Venues page.
+ * 
+ * @component
+ * @returns {React.FC} - A login form to authenticate users.
+ */
 const Login: React.FC = () => {
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
@@ -12,6 +27,16 @@ const Login: React.FC = () => {
 
     const navigate = useNavigate();
 
+    /**
+     * Handles the user login process.
+     * 
+     * Sends a request to the server with user credentials (email and password). If the login is successful,
+     * saves user data using the AuthContext and redirects the user to the venues page.
+     * 
+     * @async
+     * @function
+     * @returns {Promise<void>} - The result of the login process or sets an error if something goes wrong.
+     */
     const handleLogin = async () => {
         try {
             const response = await api.post('/auth/login', {

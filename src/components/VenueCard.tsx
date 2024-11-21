@@ -174,7 +174,7 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, 
                     </Box>
                 </Box>
 
-                <Typography variant="body2" color="text.secondary" gutterBottom>
+                <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: '2', WebkitBoxOrient: 'vertical', height: '2.4em', lineHeight: '1.2em' }} color="text.secondary" gutterBottom>
                     {locationDisplay}
                 </Typography>
 

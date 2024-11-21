@@ -33,15 +33,19 @@ const DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-const VenueDetailsContainer = styled(Box)({
+const VenueDetailsContainer = styled(Box)(({ theme }) => ({
     maxWidth: '1200px',
     margin: '40px auto',
-    padding: '20px',
+    padding: theme.spacing(2),
+    [theme.breakpoints.down('sm')]: {
+        padding: theme.spacing(1),
+        margin: '10px auto',
+    },
     display: 'flex',
     flexDirection: 'column',
-    gap: '20px',
+    gap: theme.spacing(3),
     position: 'relative'
-});
+}));
 
 const ImageGallery = styled(Box)(({ theme }) => ({
     display: 'grid',
@@ -91,6 +95,11 @@ const AmenityChip = styled(Box)(({ theme }) => ({
     backgroundColor: theme.palette.grey[50],
     '& .MuiSvgIcon-root': {
         color: theme.palette.primary.main,
+        fontSize: { xs: '1.2rem', sm: '1.5rem' },
+    },
+    [theme.breakpoints.down('sm')]: {
+        padding: theme.spacing(0.5, 1),
+        fontSize: '0.875rem',
     },
 }));
 
@@ -241,7 +250,18 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
                 <InfoSection>
                     {/* Left column - Main info */}
                     <Box>
-                        <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 2 }}>
+                        <Typography 
+                            variant="h3" 
+                            sx={{ 
+                                fontWeight: 'bold', 
+                                mb: 2,
+                                fontSize: {
+                                    xs: '1.4rem',
+                                    sm: '2rem',
+                                    md: '2.5rem'
+                                }
+                            }}
+                        >
                             {venue.name}
                         </Typography>
 
@@ -249,7 +269,7 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
                             <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                                 {venue.price.toLocaleString('no-NO')} NOK
                             </Typography>
-                            <Typography variant="subtitle1" color="text.secondary">
+                            <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.875rem' }}} color="text.secondary">
                                 per night
                             </Typography>
                         </Box>
@@ -339,7 +359,7 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
                     {/* Right column - Booking & Details */}
                     <Box sx={{ position: 'sticky', top: 24 }}>
                         <Box sx={{
-                            padding: 3,
+                            padding: { xs: 2, sm: 3 },
                             border: '1px solid',
                             borderColor: 'divider',
                             borderRadius: 2,
@@ -357,7 +377,7 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
                                 Up to {venue.maxGuests} guests
                             </Typography>
 
-                            {!isManagerView && <BookingForm venueId={venue.id} />}
+                            {!isManagerView && <BookingForm venueId={venue.id} maxGuests={venue.maxGuests} />}
                         </Box>
                     </Box>
                 </InfoSection>

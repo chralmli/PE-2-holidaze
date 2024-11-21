@@ -1,8 +1,26 @@
+/**
+ * Register.tsx
+ * 
+ * A component for user registration, allowing new users to create an account by providing necessary information
+ * including email, username, password, and optional profile data.
+ * 
+ * Users have an option to register as a venue manager as well.
+ */
+
 import React, { useState } from 'react';
 import { TextField, Button, Container, Typography, Checkbox, FormControlLabel, Alert, Box } from '@mui/material';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * Register Component
+ * 
+ * A React functional component that renders a registration form. Users can register using their email, username, and password, and provide optional details for avatar, banner, and bio. 
+ * The form also allows the user to register as a venue manager.
+ * 
+ * @component
+ * @returns {React.FC} - A user registration form.
+ */
 const Register: React.FC = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -18,6 +36,15 @@ const Register: React.FC = () => {
 
     const navigate = useNavigate();
 
+    /**
+     * Handles the user registration process.
+     * 
+     * This function collects the form data, performs basic validation, and sends a POST request to the server to register the user.
+     * 
+     * @async
+     * @function
+     * @returns {Promise<void>} - The result of the registration process, or an error if something went wrong.
+     */
     const handleRegister = async () => {
         setError(null);
         setSuccess(null);

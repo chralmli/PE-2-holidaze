@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { CssBaseline, GlobalStyles, Alert, Snackbar } from '@mui/material';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import Home from './pages/Home';
 import PostAccommodationRoute from './pages/PostAccommodationRoute';
 import Register from './pages/Register';
@@ -113,6 +114,7 @@ const App: React.FC = () => {
         </Alert>
       </Snackbar>
       </>
+      <Footer />
     </ThemeProvider>
   );
 };

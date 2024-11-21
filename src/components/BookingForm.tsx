@@ -12,19 +12,19 @@ import '../assets/styles/CustomDatePicker.css'
 
 interface BookingFormProps {
   venueId: string;
-  maxGuests?: number;
+  maxGuests: number;
 }
 
 dayjs.extend(isSameOrBefore);
 
-const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests = 1 }) => {
+const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests }) => {
   const { isLoggedIn, user } = useAuth();
   const navigate = useNavigate();
 
   // Form state
   const [dateFrom, setDateFrom ] = useState<Dayjs | null>(null);
   const [dateTo, setDateTo ] = useState<Dayjs | null>(null);
-  const [guests, setGuests ] = useState<number>(1);
+  const [guests, setGuests ] = useState<string>('1');
 
   // UI state
   const [loading, setLoading] = useState<boolean>(false);
@@ -95,7 +95,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests = 1 }) => 
               return false;
             }
 
-            if (guests <= 0 || guests > maxGuests) {
+            const guestsNumber = parseInt(guests, 10);
+            if (guestsNumber <= 0 || guestsNumber > maxGuests) {
               setErrorMessage(`Please select between 1 and ${maxGuests} guests.`);
               return false;
             }
@@ -131,7 +132,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests = 1 }) => 
       await createBooking({
         dateFrom: dateFrom?.format('YYYY-MM-DD'),
         dateTo: dateTo.format('YYYY-MM-DD'),
-        guests,
+        guests: parseInt(guests, 10),
         venueId,
       });
 
@@ -202,9 +203,21 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests = 1 }) => 
           label="Number of guests"
           type="number"
           value={guests}
-          onChange={(e) => setGuests(Number(e.target.value))}
-          inputProps={{ min: 1, max: maxGuests }}
-          helperText={`Maximum ${maxGuests} guests allowe`}
+          onChange={(e) => {
+            const value = e.target.value;
+            setGuests(value);
+          }}
+          inputProps={{ 
+            min: 0, 
+            max: maxGuests, 
+            onKeyDown: (e) => { 
+              if (e.key === 'e' || e.key === '-' || e.key === '+') { 
+                e.preventDefault(); 
+              }
+            } 
+          }}
+          helperText={`Maximum ${maxGuests} guests allowed`}
+          fullWidth
         />
 
         {errorMessage && (

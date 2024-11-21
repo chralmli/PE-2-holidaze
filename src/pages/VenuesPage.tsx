@@ -11,6 +11,32 @@ import MapRoundedIcon from '@mui/icons-material/MapRounded';
 import { FilterList as FilterIcon } from '@mui/icons-material';
 import L from 'leaflet';
 
+
+/**
+ * Interface for filter state
+ * @interface
+ */
+interface FilterState {
+  price: string;
+  guests: string;
+  rating: string;
+  wifi: boolean;
+  parking: boolean;
+  breakfast: boolean;
+  pets: boolean;
+}
+
+/**
+ * VenuesPage Component
+ * Displays a list of venues with filtering, search, and map functionality
+ * Features responsive design with a map drawer for mobile views
+ * 
+ * @component
+ * @example
+ * ```tsx
+ * <VenuesPage />
+ * ```
+ */
 const VenuesPage: React.FC = () => {
   const [allVenues, setAllVenues] = useState<Venue[]>([]);
   const [venuesInView, setVenuesInView] = useState<Venue[]>([]);
@@ -32,9 +58,10 @@ const VenuesPage: React.FC = () => {
     pets: false,
   });
 
+  /** Number of venues to display per page */
    const VENUES_PER_PAGE = 15;
 
-  // Extract search parameters from the query string
+    /** Effect to handle search parameters from URL */
    useEffect(() => {
     const location = params.get('location')?.toLowerCase() || '';
     const guests = params.get('guests') || 'any';
@@ -45,7 +72,10 @@ const VenuesPage: React.FC = () => {
       guests: guests, 
     }));
 
-    // Filter venues based on location and guests
+    /**
+   * Filters venues based on current filter state
+   * @type {Venue[]}
+   */
     const filteredVenues = allVenues.filter((venue) => {
       return (
         venue.name.toLowerCase().includes(location) &&
@@ -56,7 +86,7 @@ const VenuesPage: React.FC = () => {
     setVenuesInView(filteredVenues);
    }, [search, allVenues]);
 
-  // Handle screen resize for mobile view adjustments
+  /** Effect to handle screen resize events */
    useEffect(() => {
     const handleResize = () => {
       setIsSmallScreen(window.innerWidth < 768);
@@ -65,7 +95,7 @@ const VenuesPage: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
    }, []);
 
-  //  Fetch venues data
+   /** Effect to fetch initial venues data */
    useEffect(() => {
     const fetchVenues = async () => {
       setIsLoading(true);
@@ -83,6 +113,11 @@ const VenuesPage: React.FC = () => {
     fetchVenues();
   }, []);
 
+    /**
+   * Handles search functionality
+   * Filters venues based on name, city, or country
+   * @param {string} query - Search query string
+   */
   const handleSearch = (query: string) => {
     setIsLoading(true);
     const searchTerm = query.toLowerCase();
@@ -111,6 +146,12 @@ const VenuesPage: React.FC = () => {
     );
   });
 
+
+  /**
+   * Handles pagination page changes
+   * @param {React.ChangeEvent<unknown>} _ - Event object (unused)
+   * @param {number} value - New page number
+   */
   const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
     setCurrentPage(value);
   };
@@ -118,8 +159,12 @@ const VenuesPage: React.FC = () => {
 
   const handleOpenFilterModal = () => setFilterModalOpen(true);
   const handleCloseFilterModal = () => setFilterModalOpen(false);
-
-  // Triggered when the map is updated (zoom or pan)
+  
+  /**
+   * Updates venues in view based on map bounds
+   * Called when map is panned or zoomed
+   * @param {L.LatLngBounds} bounds - Current map bounds
+   */
   const handleMapUpdate = (bounds: L.LatLngBounds) => {
     if (!bounds) return;
 
@@ -152,7 +197,7 @@ const VenuesPage: React.FC = () => {
             mx: 'auto',
           }}
         >
-          <Box sx={{ flex: 1, maxWidth:'calc(100% - 120px)' }}>
+          <Box sx={{ flex: 1 }}>
             <SearchBar
               onSearch={handleSearch}
               isLoading={isLoading}
@@ -167,7 +212,6 @@ const VenuesPage: React.FC = () => {
             startIcon={<FilterIcon />}
             sx={{
               height: '56px',
-              minWidth: '100px',
               borderRadius: '24px',
               borderColor: '#34e89e',
               backgroundColor: 'white',
@@ -176,6 +220,12 @@ const VenuesPage: React.FC = () => {
               alignItems: 'center',
               gap: 1,
               mt: 2,
+              width: { xs: '48px', sm: 'auto' },
+              minWidth: { xs: '48px', sm: '100px' },
+              padding: { xs: '0', sm: '0 16px' },
+              '& .MuiButton-startIcon': {
+                margin: { xs: 0, sm: '0, 8px 0 -4px' },
+              },
               '&:hover': {
                 borderColor: '#0f3443',
                 backgroundColor: '#f5f5f5',
@@ -187,7 +237,9 @@ const VenuesPage: React.FC = () => {
               },
             }}
           >
-            Filters
+            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+              Filters
+            </Box>
           </Button>
         </Box>
         <FilterModal open={filterModalOpen} filterState={filterState} onClose={handleCloseFilterModal} onApply={handleCloseFilterModal} setFilterState={setFilterState} />

@@ -67,7 +67,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, showBookingId = fals
                 sx={{ objectFit: 'cover' }}
             />
 
-            <CardContent sx={{ padding: 3 }}>
+            <CardContent sx={{ padding: 2 }}>
                 <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2 }}>
                     {booking.venue?.name || 'Venue not available'}
                 </Typography>

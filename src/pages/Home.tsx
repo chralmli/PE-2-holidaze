@@ -1,3 +1,11 @@
+/**
+ * Home.tsx
+ * 
+ * A component that serves as the home page for the Holidaze booking platform.
+ * Provides search functionality to find venues based on location, date range, and the number of guests.
+ * Displays the most popular and best-rated venues.
+ */
+
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Typography, Tabs, Tab, Snackbar, Alert } from "@mui/material";
@@ -64,12 +72,23 @@ interface TabPanelProps {
     value: number;
 }
 
+/**
+ * TabPanel Component
+ * 
+ * A functional component for rendering the content of each tab.
+ * 
+ * @param {React.ReactNode} children - The content to be displayed in the tab.
+ * @param {number} index - The index of the tab.
+ * @param {number} value - The current selected tab index.
+ * @returns {React.ReactElement} - The content if the tab is selected.
+ */
 const TabPanel: React.FC<TabPanelProps> = ({ children, value, index }) => (
     <div role="tabpanel" hidden={value !== index} aria-labelledby={`venue-tab-${index}`}>
         {value === index && children}
     </div>
 );
 
+// Slider settings for the venue carousel
 const sliderSettings = {
     dots: true,
     infinite: true,
@@ -93,8 +112,16 @@ const sliderSettings = {
     ],
 };
 
-
-// Home Component
+/**
+ * Home Component
+ * 
+ * A React functional component that serves as the landing page for the Holidaze platform.
+ * Users can search for venues based on location, date, and the number of guests.
+ * Popular and best-rated venues are displayed for easy browsing.
+ * 
+ * @component
+ * @returns {React.ReactElement} - The home page of the application.
+ */
 const Home: React.FC = () => {
     // State management
     const [searchParams, setSearchParams] = useState({
@@ -116,7 +143,12 @@ const Home: React.FC = () => {
 
     const navigate = useNavigate();
 
-    // Fetch suggestions with debounce
+    /**
+     * Fetches venue suggestions based on user input for location.
+     * Uses debounce to limit API calls while typing.
+     * 
+     * @param {string} query - The user input for location.
+     */
     const fetchSuggestions = useCallback(
         debounce(async (query: string) => {
             if (query.length < 2) {
@@ -139,7 +171,10 @@ const Home: React.FC = () => {
         []
     );
 
-    // fetch venues
+    /**
+     * Fetches a list of venues from the API when the component mounts.
+     * Handles loading and error states accordingly.
+     */
     useEffect(() => {
         const fetchVenues = async () => {
             setLoading(prev => ({ ...prev, venues: true }));
@@ -158,11 +193,17 @@ const Home: React.FC = () => {
         fetchVenues();
     }, []);
 
-    // Search suggestions when location changes
+    // Fetch suggestions when location changes
     useEffect(() => {
         fetchSuggestions(searchParams.location);
     }, [searchParams.location, fetchSuggestions]);
 
+    /**
+     * Validates the selected check-in and check-out dates.
+     * Ensures dates are valid and within acceptable ranges.
+     * 
+     * @returns {boolean} - True if dates are valid, otherwise false.
+     */
     const validateDates = () => {
         if (!searchParams.checkIn || !searchParams.checkOut) {
             setError('Please select both check-in and check-out dates');
@@ -176,7 +217,7 @@ const Home: React.FC = () => {
             return false;
         }
 
-        // Dont allow bookings more than a year in advance
+        // Don't allow bookings more than a year in advance
         if (searchParams.checkIn.isAfter(dayjs().add(1, 'year'))) {
             setError('Bookings cannot be made more than a year in advance');
             setShowError(true);
@@ -186,6 +227,10 @@ const Home: React.FC = () => {
         return true;
     };
 
+    /**
+     * Handles the search functionality.
+     * Validates inputs and redirects the user to the venues page with the appropriate query parameters.
+     */
     const handleSearch = () => {
         if (!validateDates()) return;
 
@@ -197,7 +242,14 @@ const Home: React.FC = () => {
         });
         navigate(`/venues?${queryParams.toString()}`);
     };
-
+    
+    /**
+     * Handles input changes for the search form.
+     * Updates the search parameters state.
+     * 
+     * @param {keyof typeof searchParams} field - The field being updated.
+     * @param {any} value - The new value for the field.
+     */
     const handleInputChange = (field: keyof typeof searchParams, value: any) => {
         setSearchParams(prev => ({...prev, [field]: value }));
     };

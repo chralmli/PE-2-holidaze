@@ -1,16 +1,41 @@
+/**
+ * EditVenueForm.tsx
+ *
+ * This component is used to edit the details of an existing venue.
+ * The form allows updating venue details such as name, description, price, and amenities.
+ * Users can also delete the venue from the system.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, TextField, Button, Typography, Checkbox, FormControlLabel, CircularProgress } from '@mui/material';
 import { getVenueById, updateVenue, deleteVenue } from '../services/venueService';
 import { Venue } from '../types/Venue';
 
+/**
+ * EditVenueForm Component
+ *
+ * A React functional component that allows users to edit a specific venue's details.
+ * The component retrieves the venue information using the `venueId` from the route parameters.
+ * Users can update the venue's information or delete the venue.
+ *
+ * @component
+ * @returns {React.ReactElement} - A form that allows editing the venue details.
+ */
 const EditVenueForm: React.FC = () => {
   const { venueId } = useParams<{ venueId: string }>();
   const navigate = useNavigate();
   const [venue, setVenue] = useState<Venue | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-
+  
+  /**
+   * Fetches venue data by its ID.
+   *
+   * @async
+   * @function
+   * @returns {Promise<void>}
+   */
   useEffect(() => {
     const fetchVenue = async () => {
       if (!venueId) return;
@@ -28,6 +53,16 @@ const EditVenueForm: React.FC = () => {
   fetchVenue();
   }, [venueId]);
 
+  /**
+   * Handles updating the venue details.
+   *
+   * This function updates the venue details in the backend and provides user feedback.
+   * Navigates to the admin page after a successful update.
+   *
+   * @async
+   * @function
+   * @returns {Promise<void>}
+   */
   const handleUpdateVenue = async () => {
     if (!venue || !venueId) {
       setMessage({ type: 'error', text: 'Unable to update venue. Missing venue or venue ID' });
@@ -46,6 +81,16 @@ const EditVenueForm: React.FC = () => {
     }
   };
 
+  /**
+   * Handles deleting the venue.
+   *
+   * This function deletes the venue from the backend after user confirmation and provides feedback.
+   * Navigates to the admin page after a successful deletion.
+   *
+   * @async
+   * @function
+   * @returns {Promise<void>}
+   */
   const handleDeleteVenue = async () => {
     if (!venueId) {
       setMessage({ type: 'error', text: 'Unable to delete venue. Missing venue ID' });
@@ -67,7 +112,7 @@ const EditVenueForm: React.FC = () => {
       }
     }
   };
-
+  // If loading is true, display a loading spinner
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -76,6 +121,7 @@ const EditVenueForm: React.FC = () => {
     );
   }
 
+  // If venue not found, display a message
   if (!venue) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -84,6 +130,7 @@ const EditVenueForm: React.FC = () => {
     );
   }
 
+  // Main component rendering
   return (
     <Box 
       sx={{ 
@@ -98,6 +145,7 @@ const EditVenueForm: React.FC = () => {
         Edit Venue
       </Typography>
 
+      {/* Display success or error message */}
       {message && (
         <Typography
           variant="body1"

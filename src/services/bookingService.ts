@@ -1,7 +1,14 @@
 import api from '../services/api';
 import { BookingRequest, BookingResponse } from '../types/Booking';
 
-// Function to update a booking
+/**
+ * Updates an existing booking
+ * @param {string} bookingId - The ID of the booking to update
+ * @param {Partial<BookingRequest>} updatedData - The data to update
+ * @returns {Promise<BookingResponse>} The updated booking
+ * @throws {Error} If booking update fails
+ */
+
 export const updateBooking = async (bookingId: string, updatedData: Partial<BookingRequest>): Promise<BookingResponse> => {
     try {
         const response = await api.put<{ data: BookingResponse }>(`/holidaze/bookings/${bookingId}`, updatedData);
@@ -12,7 +19,13 @@ export const updateBooking = async (bookingId: string, updatedData: Partial<Book
     }
 };
 
-// Function to delete a booking
+/**
+ * Deletes a booking
+ * @param {string} bookingId - The ID of the booking to delete
+ * @returns {Promise<void>}
+ * @throws {Error} If booking deletion fails
+ */
+
 export const deleteBooking = async (bookingId: string): Promise<void> => {
     try {
         await api.delete(`/holidaze/bookings/${bookingId}`);
@@ -22,7 +35,13 @@ export const deleteBooking = async (bookingId: string): Promise<void> => {
     }
 };
 
-// Function to get bookings for a specific user
+/**
+ * Fetches all bookings for a specific user
+ * @param {string} userName - The username to fetch bookings for
+ * @returns {Promise<BookingResponse[]>} Array of user's bookings
+ * @throws {Error} If bookings cannot be fetched
+ */
+
 export const getBookingsByUserName = async (userName: string): Promise<BookingResponse[]> => {
     try {
         const response = await api.get<{ data: BookingResponse[] }>(`/holidaze/profiles/${userName}/bookings`);
@@ -38,7 +57,17 @@ export const getBookingsByUserName = async (userName: string): Promise<BookingRe
     }
 };
 
-// Function to create a booking for a specific venue
+/**
+ * Creates a new booking for a venue
+ * @param {BookingRequest} bookingData - The booking data
+ * @param {string} bookingData.dateFrom - Start date of the booking (YYYY-MM-DD)
+ * @param {string} bookingData.dateTo - End date of the booking (YYYY-MM-DD)
+ * @param {number} bookingData.guests - Number of guests
+ * @param {string} bookingData.venueId - ID of the venue to book
+ * @returns {Promise<BookingResponse>} The created booking
+ * @throws {Error} If booking creation fails or validation fails
+ */
+
 export const createBooking = async (bookingData: BookingRequest): Promise<BookingResponse> => {
     // Validate the bookingData before making the request
     const { dateFrom, dateTo, guests } = bookingData;

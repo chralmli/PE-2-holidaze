@@ -1,8 +1,15 @@
 import axios from 'axios';
 
-// Get the API key from the environment variables
+
+
+/** API key from environment variables */
 const apiKey = import.meta.env.VITE_API_KEY;
 
+/**
+ * Axios instance configured with base URL and default headers
+ * @constant
+ * @type {import('axios').AxiosInstance}
+ */
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
     headers: {
@@ -10,7 +17,11 @@ const api = axios.create({
     },
 });
 
-// Attach the token to every request
+/**
+ * Request interceptor to attach authentication tokens
+ * Adds Bearer token from localStorage if user is logged in
+ * Adds API key from environment variables if available
+ */
 api.interceptors.request.use((config) => {
     const storedUser = localStorage.getItem('user');
 
@@ -32,7 +43,10 @@ api.interceptors.request.use((config) => {
     }
 );
 
-// handle unauthorized response (401) globally
+/**
+ * Response interceptor to handle authentication errors
+ * Redirects to login page and clears user data on 401 responses
+ */
 api.interceptors.response.use(
     (response) => response,
     (error) => {
@@ -43,4 +57,5 @@ api.interceptors.response.use(
         return Promise.reject(error);
     }
 )
+
 export default api;
