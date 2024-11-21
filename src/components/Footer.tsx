@@ -62,7 +62,7 @@ const Footer: React.FC = () => {
           {/* Company Info */}
           <Grid item xs={12} md={4}>
             <FooterSection>
-              <Typography variant="h4" sx={{ mb: 2, fontWeight: 'bold', color: '#34e89e' }}>
+              <Typography variant="h3" sx={{ mb: 2, fontWeight: 'bold', color: '#34e89e' }}>
                 Holidaze
               </Typography>
               <Typography variant="body1" sx={{ mb: 2 }}>
@@ -89,7 +89,7 @@ const Footer: React.FC = () => {
           {/* Quick Links */}
           <Grid item xs={12} sm={6} md={2}>
             <FooterSection>
-              <Typography variant="h5" sx={{ mb: 2, color: '#34e89e' }}>
+              <Typography variant="h4" sx={{ mb: 2, color: '#34e89e' }}>
                 Quick Links
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -112,7 +112,7 @@ const Footer: React.FC = () => {
           {/* For Venue Managers */}
           <Grid item xs={12} sm={6} md={3}>
             <FooterSection>
-              <Typography variant="h5" sx={{ mb: 2, color: '#34e89e' }}>
+              <Typography variant="h4" sx={{ mb: 2, color: '#34e89e' }}>
                 For Venue Managers
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -129,7 +129,7 @@ const Footer: React.FC = () => {
           {/* Contact Info */}
           <Grid item xs={12} sm={6} md={3}>
             <FooterSection>
-              <Typography variant="h5" sx={{ mb: 2, color: '#34e89e' }}>
+              <Typography variant="h4" sx={{ mb: 2, color: '#34e89e' }}>
                 Contact Us
               </Typography>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

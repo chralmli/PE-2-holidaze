@@ -9,7 +9,6 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
-
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { Link, useNavigate } from 'react-router-dom';
@@ -49,8 +48,24 @@ const Header: React.FC = () => {
   return (
     <AppBar position="sticky" sx={{ backgroundColor: '#204051' }}>
         <Toolbar>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontSize: '20px', fontFamily: 'poppins', color: '#e0f7fa' }}>
-            holidaze
+            <Typography 
+                variant="h6" 
+                component={Link} 
+                to="/"
+                sx={{ 
+                    flexGrow: 1, 
+                    fontSize: '20px', 
+                    fontFamily: 'poppins', 
+                    color: '#e0f7fa',
+                    textDecoration: 'none',
+                    cursor: 'pointer',
+                    transition: 'color 0.3s ease',
+                    '&:hover': {
+                        color: '#34e89e',
+                    }
+                }}
+            >
+                holidaze
             </Typography>
             {isMobile ? (
                 <>

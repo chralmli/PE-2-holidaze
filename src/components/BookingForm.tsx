@@ -241,6 +241,10 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests }) => {
             py: 1.5,
             fontSize: '1.1rem',
             fontWeight: 'bold',
+            background: 'linear-gradient(135deg, #34e89e, #0f3443)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #0f3443, #34e89e)',
+            },
           }}
         >
           {loading ? 'Booking...' : 'Confirm Booking'}

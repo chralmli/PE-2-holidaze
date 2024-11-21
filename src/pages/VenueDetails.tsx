@@ -266,7 +266,7 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
                         </Typography>
 
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                            <Typography variant="h4" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
+                            <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#34e89e' }}>
                                 {venue.price.toLocaleString('no-NO')} NOK
                             </Typography>
                             <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.875rem' }}} color="text.secondary">
@@ -275,7 +275,7 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
                         </Box>
 
                         <Box sx={{ mb: 4 }}>
-                            <Typography variant="h6" sx={{ mb: 2 }}>
+                            <Typography variant="h5" sx={{ mb: 2 }}>
                                 About this venue
                             </Typography>
                             <Typography variant="body1" sx={{ lineHeight: 1.8, color: 'text.secondary' }}>
@@ -284,7 +284,7 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
                         </Box>
 
                         {/* Amenities */}
-                        <Typography variant="h6" sx={{ mb: 2 }}>
+                        <Typography variant="h5" sx={{ mb: 2 }}>
                             Amenities
                         </Typography>
                         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 4 }}>
@@ -311,7 +311,7 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
                         </Box>
 
                         {/* Location */}
-                        <Typography variant="h6" sx={{ mb: 2 }}>
+                        <Typography variant="h5" sx={{ mb: 2 }}>
                             Location
                         </Typography>
                         <Typography variant="body1" sx={{ mb: 3 }}>
