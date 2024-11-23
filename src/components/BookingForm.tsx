@@ -102,7 +102,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests }) => {
             }
 
             if (dateTo.isBefore(dateFrom)) {
-              setErrorMessage('The end date must be after the start date.');
+              setErrorMessage('Check-out date must be after the check-in date.');
               return false;
             }
 
@@ -136,7 +136,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests }) => {
         venueId,
       });
 
-      setSuccessMessage('Booking created successfully!');
+      setSuccessMessage('Booking confirmed!');
       setTimeout(() => navigate('/profile'), 2000);
     } catch (error: any) {
       const message = error.response?.status === 409
@@ -170,6 +170,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests }) => {
         backgroundColor: 'background.paper',
         boxShadow: '0 2px 4px rgba(0,0,0,0.05',
       }}
+      data-testid="booking-form"
     >
       <Typography variant="h5">Book your stay</Typography>
 
@@ -186,6 +187,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests }) => {
             disablePast
             shouldDisableDate={disableDate}
             sx={{ flex: 1, minWidth: '200px' }}
+            data-testid="date-from"
           />
 
           <DatePicker
@@ -196,6 +198,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests }) => {
             minDate={dateFrom || undefined}
             shouldDisableDate={disableDate}
             sx={{ flex: 1, minWidth: '200px' }}
+            data-testid="date-to"
           />
         </Box>
 
@@ -209,7 +212,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests }) => {
           }}
           inputProps={{ 
             min: 0, 
-            max: maxGuests, 
+            max: maxGuests,
+            'data-testid': 'guests',
             onKeyDown: (e) => { 
               if (e.key === 'e' || e.key === '-' || e.key === '+') { 
                 e.preventDefault(); 
@@ -221,13 +225,13 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests }) => {
         />
 
         {errorMessage && (
-          <Alert severity="error" onClose={() => setErrorMessage(null)}>
+          <Alert severity="error" onClose={() => setErrorMessage(null)} data-testid="booking-error">
             <Typography color="error">{errorMessage}</Typography>
           </Alert>
         )}
 
         {successMessage && (
-          <Alert severity="success" onClose={() => setSuccessMessage(null)}>
+          <Alert severity="success" onClose={() => setSuccessMessage(null)} data-testid="bookings-success">
             <Typography color="primary">{successMessage}</Typography>
           </Alert>
         )}
@@ -237,6 +241,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests }) => {
           color="primary"
           onClick={handleBookingSubmit}
           disabled={loading}
+          data-testid="submit-booking"
           sx={{
             py: 1.5,
             fontSize: '1.1rem',

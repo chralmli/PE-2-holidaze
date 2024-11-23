@@ -51,7 +51,7 @@ const FilterModal: React.FC<FilterModalProps> = ({ open, filterState, onClose, o
         },
       }}
     >
-      <DialogTitle sx={{ pb: 1 }}>Filter Venues</DialogTitle>
+      <DialogTitle sx={{ pb: 1, marginBottom: 1 }}>Filter Venues</DialogTitle>
       <DialogContent>
         <Stack spacing={2}>
           {/* Selects */}

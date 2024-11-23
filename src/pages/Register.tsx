@@ -8,9 +8,9 @@
  */
 
 import React, { useState } from 'react';
-import { TextField, Button, Container, Typography, Checkbox, FormControlLabel, Alert, Box } from '@mui/material';
+import { TextField, Button, Container, Typography, Checkbox, FormControlLabel, Alert, Box, Paper, Grid, Divider } from '@mui/material';
 import api from '../services/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 /**
  * Register Component
@@ -85,102 +85,232 @@ const Register: React.FC = () => {
 
     return (
         <Container 
-            maxWidth="sm"
+            maxWidth="lg"
             sx={{
-                marginTop: '8rem',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                mb: 8,
-                minHeight: 'calc(100vh - 8rem - 64px)',
+                pt: { xs: 8, md: 12 },
+                pb: 8,
+                minHeight: 'calc(100vh - 64px)',
             }}
         >
-            <Typography variant="h4" component="h1" gutterBottom sx={{ fontFamily: 'Poppins', fontWeight: '600' }}>Register</Typography>
-            {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-            {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
-            <Box
-                sx={{
-                    width: '100%',
-                    maxWidth: '400px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '2',
-                    marginTop: 2,
-                }}
-            >
-                <TextField
-                    label="Username"
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                />
-                <TextField
-                    label="Email"
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                />
-                <TextField
-                    label="Password"
-                    type="password"
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-                <TextField
-                    label="Bio (optional)"
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    value={bio}
-                    multiline
-                    rows={4}
-                />
-                <TextField
-                    label="Avatar URL (optional)"
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    value={avatarUrl}
-                    onChange={(e) => setAvatarUrl(e.target.value)}
-                />
-                <TextField
-                    label="Avatar Alt Text (optional)"
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    value={avatarAlt}
-                    onChange={(e) => setAvatarAlt(e.target.value)}
-                />
-                <TextField
-                    label="Banner URL (optional)"
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    value={bannerUrl}
-                    onChange={(e) => setBannerUrl(e.target.value)}
-                />
-                <TextField
-                    label="Banner Alt Text (optional)"
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    value={bannerAlt}
-                    onChange={(e) => setBannerAlt(e.target.value)}
-                />
-                <FormControlLabel
-                    control={<Checkbox checked={isVenueManager} onChange={(e) => setIsVenueManager(e.target.checked)} />}
-                    label="Register as a Venue Manager"
-                />
-                <Button onClick={handleRegister} variant="contained" color="primary" sx={{ mt: 2 }}>Register</Button>
-            </Box>
+            <Grid container spacing={4} justifyContent="center">
+                <Grid item xs={12} lg={4}
+                    sx={{
+                        display: { xs: 'none', md: 'block' }
+                    }}
+                >
+                    <Box
+                        sx={{
+                            position: 'sticky',
+                            top: '100px',
+                            p: 4,
+                        }}
+                    >
+                        <Typography
+                            variant="h3"
+                            gutterBottom
+                            sx={{
+                                background: 'linear-gradient(135deg, #34e89e 0%, #0f3443 100%)',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                mb: 3
+                            }}
+                        >
+                            Welcome to Holidaze
+                        </Typography>
+                        <Typography variant="h6" color="text.secondary" gutterBottom>
+                            Create your account and start exploring
+                        </Typography>
+                        <Typography color="text.secondary" sx={{ mb: 4 }}>
+                            Join our community to discover amazing venues and create unforgettable experiences.
+                        </Typography>
+                        <Box sx={{ mb: 4 }}>
+                            <Typography variant="subtitle1" color="primary" gutterBottom>
+                                Already have an account?
+                            </Typography>
+                            <Button
+                                component={Link}
+                                to="/login"
+                                variant='outlined'
+                                color='primary'
+                                fullWidth
+                                sx={{ maxWidth: '200px' }}
+                            >
+                                Sign in
+                            </Button>
+                        </Box>
+                    </Box>
+                </Grid>
+
+                {/* Right side */}
+                <Grid item xs={12} md={7} lg={8}>
+                    <Paper
+                        elevation={0}
+                        sx={{
+                            p: { xs: 2, sm: 4 },
+                            borderRadius: '24px',
+                            background: 'rgba(255, 255, 255, 0.95)',
+                            backdropFilter: 'blur(10px)',
+                            border: '1px solid',
+                            borderColor: 'grey.100',
+                        }}
+                    >
+                        <Typography variant="h4" gutterBottom>Register</Typography>
+                        {error && 
+                            <Alert 
+                                severity="error" 
+                                sx={{ mb: 3, borderRadius: '12px' }}
+                                data-testid="register-error"
+                            >
+                                {error}
+                            </Alert>
+                        }
+                        {success && 
+                            <Alert 
+                                severity="success" 
+                                sx={{ mb: 3, borderRadius: '12px' }}
+                                data-testid="register-success"
+                            >
+                                {success}
+                            </Alert>
+                        }
+
+                        <Grid container spacing={3}>
+                            {/* Required fields */}
+                            <Grid item xs={12}>
+                                <Typography variant="subtitle1" color="primary" gutterBottom>
+                                    Required Information
+                                </Typography>
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    label="Username"
+                                    fullWidth
+                                    value={name}
+                                    name="username"
+                                    onChange={(e) => setName(e.target.value)}
+                                    data-testid="register-username"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    label="Email"
+                                    fullWidth
+                                    value={email}
+                                    name="email"
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    data-testid="register-email"
+                                    helperText="Must be a valid stud.noroff.no address"
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="Password"
+                                    type="password"
+                                    fullWidth
+                                    value={password}
+                                    name="password"
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    data-testid="register-password"
+                                    helperText="Must be at least 8 characters long"
+                                />
+                            </Grid>
+
+                            <Grid item xs={12}>
+                                <Divider sx={{ my: 3 }} />
+                                <Typography variant="subtitle1" color="primary" gutterBottom>
+                                    Profile Information (Optional)
+                                </Typography>
+                            </Grid>
+
+                            {/* Optional fields */}
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="Bio"
+                                    fullWidth
+                                    value={bio}
+                                    onChange={(e) => setBio(e.target.value)}
+                                    multiline
+                                    rows={4}
+                                    data-testid="register-bio"
+                                />
+                            </Grid>
+
+                            {/* Avatar Fields */}
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    label="Avatar URL (optional)"
+                                    fullWidth
+                                    value={avatarUrl}
+                                    onChange={(e) => setAvatarUrl(e.target.value)}
+                                    data-testid="register-avatar-url"
+                                    helperText="Must be a valid URL"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    label="Avatar Alt Text (optional)"
+                                    fullWidth
+                                    value={avatarAlt}
+                                    onChange={(e) => setAvatarAlt(e.target.value)}
+                                    data-testid="register-avatar-alt"
+                                />
+                            </Grid>
+
+                            {/* Banner Fields */}
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    label="Banner URL (optional)"
+                                    fullWidth
+                                    value={bannerUrl}
+                                    onChange={(e) => setBannerUrl(e.target.value)}
+                                    data-testid="register-banner-url"
+                                    helperText="Must be a valid URL"
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    label="Banner Alt Text (optional)"
+                                    fullWidth
+                                    value={bannerAlt}
+                                    onChange={(e) => setBannerAlt(e.target.value)}
+                                    data-testid="register-banner-alt"
+                                />
+                            </Grid>
+
+                            {/* Venue Manager Option */}
+                            <Grid item xs={12}>
+                                <FormControlLabel
+                                    control={
+                                        <Checkbox
+                                            checked={isVenueManager}
+                                            disabled={isVenueManager}
+                                            onChange={(e) => setIsVenueManager(e.target.checked)}
+                                            data-testid="register-venue-manager"
+                                        />
+                                    }
+                                    label="Register as a Venue Manager"
+                                />
+                            </Grid>
+
+                            {/* Submit Button */}
+                            <Grid item xs={12}>
+                                <Button
+                                    onClick={handleRegister}
+                                    type="submit"
+                                    variant="contained"
+                                    color="gradient"
+                                    size="large"
+                                    fullWidth
+                                    data-testid="register-submit"
+                                    sx={{ mt: 2}}
+                                >
+                                    Create Account
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </Paper>
+                </Grid>
+            </Grid>
         </Container>
     );
 };

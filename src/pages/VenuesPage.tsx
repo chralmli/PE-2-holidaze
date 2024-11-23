@@ -203,12 +203,32 @@ const VenuesPage: React.FC = () => {
   return (
     <Box sx={{ display: 'flex', height: '100vh' }}>
       {/* Venue Cards Section */}
-      <Box sx={{ width: { lg: '60%', sm: '100%'}, height: '100vh', overflowY: 'auto', padding: '20px', backgroundColor: '#f5f5f5', }}>
+      <Box 
+        sx={{ 
+          width: { 
+            xs: '100%',
+            md: '65%',
+            lg: '60%',
+          }, 
+          height: '100vh', 
+          overflowY: 'auto', 
+          padding: {
+            xs: '20px 10px',
+            sm: '20px',
+          },
+          backgroundColor: '#f5f5f5',
+          margin: '0 auto',
+      }}>
+        {/* Search and flter section */}
         <Box 
           sx={{ 
             display: 'flex',
             alignItems: 'center',
-            maxWidth: '100%',
+            maxWidth: {
+              xs: '100%',
+              sm: '600px',
+              md: '100%'
+            },
             gap: 2,
             mb: 3,
             px: { xs: 1, sm: 2 },
@@ -261,7 +281,14 @@ const VenuesPage: React.FC = () => {
           </Button>
         </Box>
         <FilterModal open={filterModalOpen} filterState={filterState} onClose={handleCloseFilterModal} onApply={handleCloseFilterModal} setFilterState={setFilterState} />
-        
+        <Box sx={{
+          maxWidth: {
+            xs: '100%',
+            sm: '600px',
+            md: '100%'
+          },
+          mx: 'auto'
+        }}>
           <VenueList 
             venues={filteredVenues.slice((currentPage - 1) * VENUES_PER_PAGE, currentPage * VENUES_PER_PAGE)} 
             isLoading={isLoading} 
@@ -269,6 +296,8 @@ const VenuesPage: React.FC = () => {
             hoveredVenueId={hoveredVenueId} 
             useSlider={false}
           />
+        </Box>
+          
         
         <Stack spacing={2} alignItems="center" mt={4}>
           <Pagination count={Math.ceil(filteredVenues.length / VENUES_PER_PAGE)} page={currentPage} onChange={handlePageChange} />
@@ -281,7 +310,10 @@ const VenuesPage: React.FC = () => {
           flex: 1,
           position: 'sticky',
           top: 0,
-          width: { md: '40%', sm: '0'},
+          width: { 
+            md: '35%', 
+            lg: '40%'
+          },
           zIndex: 1,
           display: { xs: 'none', md: 'block' },
           '& .leaflet-container': {

@@ -1,0 +1,11 @@
+{
+  "id": "your-test-venue-id",
+  "name": "Tes Venue",
+  "description": "A test venue for cypress",
+  "maxGuests": 4,
+  "price": 100,
+  "location": {
+    "city": "Test City",
+    "country": "Test Country"
+  }
+}

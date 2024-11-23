@@ -155,7 +155,7 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
             );
         }
         
-        if (!venue) return <Typography variant="h6">Venue not found</Typography>
+        if (!venue) return <Typography variant="h4">Venue not found</Typography>
 
         // Handle unknown location values
         const locationDetails = [
@@ -187,7 +187,7 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
                             top: '20px',
                             right: '20px',
                             zIndex: 1,
-                            mt: 4, 
+                            mt: 4,
                             display: 'flex', 
                             gap: 1,
                             backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -269,13 +269,13 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
                             <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#34e89e' }}>
                                 {venue.price.toLocaleString('no-NO')} NOK
                             </Typography>
-                            <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.875rem' }}} color="text.secondary">
+                            <Typography variant="subtitle1" sx={{ fontSize: { xs: '1rem' }}} color="text.secondary">
                                 per night
                             </Typography>
                         </Box>
 
                         <Box sx={{ mb: 4 }}>
-                            <Typography variant="h5" sx={{ mb: 2 }}>
+                            <Typography variant="h4" sx={{ mb: 2 }}>
                                 About this venue
                             </Typography>
                             <Typography variant="body1" sx={{ lineHeight: 1.8, color: 'text.secondary' }}>
@@ -284,7 +284,7 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
                         </Box>
 
                         {/* Amenities */}
-                        <Typography variant="h5" sx={{ mb: 2 }}>
+                        <Typography variant="h4" sx={{ mb: 2 }}>
                             Amenities
                         </Typography>
                         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 4 }}>
@@ -311,7 +311,7 @@ const VenueDetails: React.FC<VenueDetailsProps> = ({ isManagerView = false }) =>
                         </Box>
 
                         {/* Location */}
-                        <Typography variant="h5" sx={{ mb: 2 }}>
+                        <Typography variant="h4" sx={{ mb: 2 }}>
                             Location
                         </Typography>
                         <Typography variant="body1" sx={{ mb: 3 }}>

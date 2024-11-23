@@ -8,14 +8,14 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Typography, Tabs, Tab, Snackbar, Alert } from "@mui/material";
+import { Box, Typography, Button, Tabs, Tab, Snackbar, Alert, Container, Paper } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
 import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
 import dayjs, { Dayjs } from 'dayjs';
 import debounce from 'lodash/debounce';
+import backgroundImage from '../assets/media/holidaze-backgorund.jpg';
 
 // Components
 import GuestCounter from '../components/GuestCounter';
@@ -30,41 +30,8 @@ import { Venue } from '../types/Venue';
 
 // Styles
 import {
-    StyledBackground,
-    ContentContainer,
-    SearchContainer,
-    SearchWrapper,
-    SearchBox,
-    SearchButton,
     StyledTextField,
-    DatePickerWrapper,
-    GuestCounterWrapper,
-    SearchButtonWrapper,
 } from '../assets/styles/HomeStyles';
-
-// Theme config
-const theme = createTheme({
-    components: {
-        MuiInputBase: {
-            styleOverrides: {
-                root: {
-                    transition: 'background-color 0.3s ease',
-                    '&:focus-within': {
-                        backgroundColor: '#f5f5f5',
-                    },
-                },
-            },
-        },
-        MuiButton: {
-            styleOverrides: {
-                root: {
-                    borderRadius: '50px',
-                    textTransform: 'none',
-                },
-            },
-        },
-    },
-});
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -98,7 +65,7 @@ const sliderSettings = {
     arrows: false,
     responsive: [
         {
-            breakpoint: 960,
+            breakpoint: 1080,
             settings: {
                 slidesToShow: 2,
             },
@@ -132,6 +99,7 @@ const Home: React.FC = () => {
     });
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const [venues, setVenues] = useState<Venue[]>([]);
+    const [bgImageLoaded, setBgImageLoaded] = useState<boolean>(false);
     const [loading, setLoading] = useState({
         venues: true,
         suggestions: false,
@@ -242,7 +210,7 @@ const Home: React.FC = () => {
         });
         navigate(`/venues?${queryParams.toString()}`);
     };
-    
+
     /**
      * Handles input changes for the search form.
      * Updates the search parameters state.
@@ -254,52 +222,108 @@ const Home: React.FC = () => {
         setSearchParams(prev => ({...prev, [field]: value }));
     };
 
+    useEffect(() => {
+        const img = new Image();
+        img.src = backgroundImage;
+        img.onload = () => setBgImageLoaded(true);
+        img.onerror = (e) => console.error('Failed to load background image:', e);
+    }, []);
+
     return (
-        <ThemeProvider theme={theme}>
-            <StyledBackground>
-                <ContentContainer>
+        <>
+            <Box
+                sx={{
+                    position: 'relative',
+                    background: 'linear-gradient(135deg, #34e89e, #0f3443 100%)',
+                    pt: { xs: 12, md: 20 },
+                    pb: { xs: 10, md: 16 },
+                    overflow: 'hidden',
+                    '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        bottom: 0,
+                        right: 0,
+                        background: bgImageLoaded
+                            ? `url(${backgroundImage}) center/cover`
+                            : 'transparent',
+                        opacity: 0.1,
+                        zIndex: 0,
+                    }
+                }}
+            >
+                <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
                     <Typography 
-                        variant="h3" 
+                        variant="h1" 
                         component="h1" 
                         sx={{ 
-                            color: '#ffffff', 
-                            fontFamily: 'Poppins, sans-serif', 
-                            fontWeight: '600', 
-                            fontSize: { xs: '28px', md: '35px' },
-                            textAlign: { xs: 'center', md: 'left' },  
-                            width: '100%',
+                            color: 'common.white', 
                             mb: { xs: 4, md: 8 }, 
+                            textAlign: { xs: 'center', md: 'left' },
+                            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
                         }}
                     >
                         Find your perfect getaway with holidaze
                     </Typography>
 
-                    <SearchContainer>
-                        <SearchWrapper>
-                            <SearchBox>
-                                <StyledTextField 
-                                    label="Location"
-                                    variant="outlined" 
-                                    value={searchParams.location} 
-                                    onChange={(e: any) => handleInputChange('location', e.target.value)} 
-                                    fullWidth
-                                />
+                    <Paper
+                        elevation={3}
+                        sx={{
+                            p: { xs: 2, md: 3 },
+                            borderRadius: '24px',
+                            background: 'rgba(255, 255, 255, 0.95)',
+                            backdropFilter: 'blur(10px)',
+                        }}
+                    >
 
-                                {/* Suggestions list component */}
-                                <SuggestionsList
-                                    suggestions={suggestions}
-                                    isLoading={loading.suggestions}
-                                    onSelectSuggestion={(venueName) => {
-                                        handleInputChange('location', venueName);
-                                        setSuggestions([]);
-                                    }}
-                                />
-                            </SearchBox>
+                        <Box
+                            sx={{
+                                display: 'grid',
+                                gridTemplateColumns: {
+                                    xs: '1fr',
+                                    sm: '1fr 1fr',
+                                    md: '2fr 1fr 1fr 1fr'
+                                },
+                                gap: 3,
+                            }}
+                        >
 
-                            <DatePickerWrapper>
+                            {/* Location Search */}
+                            <Box sx={{ gridColumn: { xs: '1', md: 'span 2' } }}>
+                                <Typography variant="subtitle2" sx={{ mb: 1, color: 'grey.700' }}>
+                                    Location
+                                </Typography>
+                                <Box sx={{ position: 'relative' }}>
+                                    <StyledTextField
+                                        fullWidth
+                                        placeholder="Where are you going?"
+                                        value={searchParams.location}
+                                        onChange={(e) => handleInputChange('location', e.target.value)}
+                                        sx={{
+                                            '& .MuiOutlinedInput-root': {
+                                                borderRadius: '12px',
+                                            }
+                                        }}
+                                    />
+                                    <SuggestionsList
+                                        suggestions={suggestions}
+                                        isLoading={loading.suggestions}
+                                        onSelectSuggestion={(venueName) => {
+                                            handleInputChange('location', venueName);
+                                            setSuggestions([]);
+                                        }}
+                                    />
+                                </Box>
+                            </Box>
+
+                            {/* Date pickers */}
+                            <Box>
+                                <Typography variant="subtitle2" sx={{ mb: 1, color: 'grey.700' }}>
+                                    Check-in
+                                </Typography>
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <MobileDatePicker
-                                        sx={{ borderBottom: '1px solid rgba(0,0,0, 0.12)' }}
                                         label="Check-in"
                                         value={searchParams.checkIn}
                                         onChange={(newValue) => {
@@ -314,12 +338,23 @@ const Home: React.FC = () => {
                                         slotProps={{
                                             textField: {
                                                 fullWidth: true,
-                                                placeholder: 'Add check-in date',
+                                                sx: {
+                                                    '&. MuiOutlinedInput-root': {
+                                                        borderRadius: '12px',
+                                                    }
+                                                }
                                             },
                                         }} 
                                     />
+                                </LocalizationProvider>
+                            </Box>
+
+                            <Box>
+                                <Typography variant="subtitle2" sx={{ mb: 1, color: 'grey.700' }}>
+                                    Check-out
+                                </Typography>
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <MobileDatePicker
-                                        sx={{ borderBottom: '1px solid rgba(0,0,0, 0.12)' }}
                                         label="Check-out"
                                         value={searchParams.checkOut}
                                         onChange={(newValue) => handleInputChange('checkOut', newValue)}
@@ -329,55 +364,79 @@ const Home: React.FC = () => {
                                         slotProps={{
                                             textField: {
                                                 fullWidth: true,
-                                                placeholder: 'Add check-out date',
+                                                sx: {
+                                                    '&. MuiOutlinedInput-root': {
+                                                        borderRadius: '12px',
+                                                    }
+                                                }
                                             },
                                         }}
                                     />
                                 </LocalizationProvider>
-                            </DatePickerWrapper>
+                            </Box>
 
                             {/* Guest counter component */}
-                            <GuestCounterWrapper>
-                                <GuestCounter
-                                    guests={searchParams.guests}
-                                    setGuests={(value) => handleInputChange('guests', value)}
-                                    anchorEl={anchorEl}
-                                    setAnchorEl={setAnchorEl}
-                                />
-                            </GuestCounterWrapper>
-                        </SearchWrapper>
-
-                        <SearchButtonWrapper>
-                            <SearchButton
-                                variant="contained"
-                                onClick={handleSearch}
-                                disabled={loading.venues}
-                                startIcon={<SearchIcon />}
-                                sx={{
-                                    height: '48px',
-                                    minWidth: { xs: '100%', md: '120px' },
+                            <Box 
+                                sx={{ 
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: 2,
+                                    justifyContent: 'flex-end'
                                 }}
                             >
-                                Search
-                            </SearchButton>
-                        </SearchButtonWrapper>
-                    </SearchContainer>
-                </ContentContainer>
-            </StyledBackground>
+                                <Box>
+                                    <Typography variant="subtitle2" sx={{ mb: 1, color: 'grey.700' }}>
+                                        Guests
+                                    </Typography>
+                                    <GuestCounter
+                                        guests={searchParams.guests}
+                                        setGuests={(value) => handleInputChange('guests', value)}
+                                        anchorEl={anchorEl}
+                                        setAnchorEl={setAnchorEl}
+                                    />
+                                </Box>
+                                {/* Search Button */}
+                                <Button
+                                    variant="contained"
+                                    color="gradient"
+                                    onClick={handleSearch}
+                                    disabled={loading.venues}
+                                    startIcon={<SearchIcon />}
+                                    fullWidth
+                                    sx={{
+                                        height: '56px',
+                                        mt: { xs: 2, md: 'auto' }
+                                    }}
+                                >
+                                    Search
+                                </Button>
+                            </Box>
+                        </Box>
+                    </Paper>
+                </Container>
+            </Box>
 
-            <Box
-                px={3}
-                maxWidth="1200px"
-                margin="auto"
-                sx={{ mt: 4 }}
-            >
+            {/* Venues Section */}
+            <Container maxWidth="lg" sx={{ mt: 8, mb: 8 }}>
                 <Tabs
                     value={selectedTab}
                     onChange={(_, value) => setSelectedTab(value)}
                     centered
                     sx={{
+                        mb: 4,
+                        '& .MuiTab-root': {
+                            fontSize: '1rem',
+                            textTransform: 'none',
+                            fontWeight: 500,
+                            color: 'grey.700',
+                            '&.Mui-selected': {
+                                color: 'primary.main',
+                            },
+                        },
                         '& .MuiTabs-indicator': {
-                            backgroundColor: '#34e89e',
+                            height: '3px',
+                            borerRadius: '2px',
+                            background: 'linear-gradient(135deg, #34e89e 0%, #34e89e 100%)',
                         },
                     }}
                 >
@@ -385,28 +444,31 @@ const Home: React.FC = () => {
                     <Tab label="Best rated venues" />
                 </Tabs>
 
-                <TabPanel value={selectedTab} index={0}>
-                    <VenueList
-                        fetchMode="popular"
-                        venues={venues}
-                        isLoading={loading.venues}
-                        onHover={() => {}}
-                        hoveredVenueId={null}
-                        useSlider
-                    />
-                </TabPanel>
+                <Box sx={{ mt: 4 }}>
+                    <TabPanel value={selectedTab} index={0}>
+                        <VenueList
+                            fetchMode="popular"
+                            venues={venues}
+                            isLoading={loading.venues}
+                            onHover={() => {}}
+                            hoveredVenueId={null}
+                            useSlider
+                        />
+                    </TabPanel>
 
-                <TabPanel value={selectedTab} index={1}>
-                    <VenueList
-                        fetchMode="bestRated"
-                        venues={venues}
-                        isLoading={loading.venues}
-                        onHover={() => {}}
-                        hoveredVenueId={null}
-                        useSlider
-                    />
-                </TabPanel>
-            </Box>
+                    <TabPanel value={selectedTab} index={1}>
+                        <VenueList
+                            fetchMode="bestRated"
+                            venues={venues}
+                            isLoading={loading.venues}
+                            onHover={() => {}}
+                            hoveredVenueId={null}
+                            useSlider
+                        />
+                    </TabPanel>
+                </Box>
+            </Container>
+                
 
             <WhyBookWithUs />
             <Testimonials />
@@ -419,12 +481,18 @@ const Home: React.FC = () => {
                 <Alert
                     onClose={() => setShowError(false)}
                     severity="error"
-                    sx={{ width: '100%' }}
+                    variant="filled"
+                    sx={{
+                        borderRadius: '12px',
+                        '& .MuiAlert-icon': {
+                            fontSize: '24px'
+                        }
+                    }}
                 >
                     {error}
                 </Alert>
             </Snackbar>
-        </ThemeProvider>
+        </>
     );
 };
         

@@ -30,7 +30,7 @@ const WhyBookWithUs: React.FC = () => {
       py={5} 
       bgcolor="#f5f5f5"
     >
-      <Typography variant='h4' sx={{ mb: 4, fontWeight: '500', textAlign: 'center', fontFamily: 'Poppins' }}>
+      <Typography variant='h3' sx={{ mb: 4, fontWeight: '500', textAlign: 'center', fontFamily: 'Poppins' }}>
         Why book with us?
       </Typography>
       <Grid container spacing={3}>

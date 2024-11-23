@@ -35,7 +35,7 @@ const VenueList: React.FC<VenueListProps> = ({
         try {
           let response;
           if (fetchMode === 'popular') {
-            response = await api.get('/holidaze/venues?_bookings=true');
+            response = await api.get('/holidaze/venues?_bookings=true&_owner=true');
             const venuesWithBookings = response.data.data;
 
             // Sort venues by the number of bookings in descending order and limit to 6
@@ -96,7 +96,7 @@ const VenueList: React.FC<VenueListProps> = ({
     autoplaySpeed: 5000,
     responsive: [
       {
-        breakpoint: 960,
+        breakpoint: 1080,
         settings: {
           slidesToShow: 2,
         },
@@ -131,10 +131,17 @@ const VenueList: React.FC<VenueListProps> = ({
           item
           xs={12}
           sm={6}
-          md={4}
+          md={6}
+          lg={4}
           key={venue.id}
           onMouseEnter={() => onHover(venue.id)}
           onMouseLeave={() => onHover(null)}
+          sx={{
+            maxWidth: {
+              md: '50%',
+              lg: '33.3333%',
+            }
+          }}
         >
           <VenueCard venue={venue} />
         </Grid>

@@ -25,7 +25,7 @@ import CreateVenueForm from '../components/CreateVenueForm';
 const AdminDashboard: React.FC = () => {
   const { profile, loading: profileLoading, error } = useUserProfile();
   const [tabIndex, setTabIndex] = useState(0);
-  
+
   /**
    * Handles tab change events
    *
@@ -68,6 +68,7 @@ const AdminDashboard: React.FC = () => {
   return (
     <Box
       sx={{
+        minHeight: 'calc(100vh - 64px)',
         maxWidth: '1200px',
         margin: '40px auto',
         padding: { xs: '10px', md: '20px' },

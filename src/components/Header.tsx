@@ -12,7 +12,6 @@ import Box from '@mui/material/Box';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import { Link, useNavigate } from 'react-router-dom';
-
 import { useAuth } from '../context/AuthContext';
 
 const Header: React.FC = () => {
@@ -20,7 +19,6 @@ const Header: React.FC = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const navigate = useNavigate();
-
     const { isLoggedIn, user, logout } = useAuth();
 
     const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -46,22 +44,32 @@ const Header: React.FC = () => {
     ];
 
   return (
-    <AppBar position="sticky" sx={{ backgroundColor: '#204051' }}>
-        <Toolbar>
+    <AppBar 
+        position="sticky"
+        elevation={0}
+        sx={{ 
+            backgroundColor: 'white',
+            borderBottom: '1px solid',
+            borderColor: 'grey.100'
+        }}>
+        <Toolbar sx={{ width: '100%', margin: '0 auto' }}>
             <Typography 
-                variant="h6" 
+                variant="h3" 
                 component={Link} 
                 to="/"
                 sx={{ 
                     flexGrow: 1, 
-                    fontSize: '20px', 
-                    fontFamily: 'poppins', 
-                    color: '#e0f7fa',
-                    textDecoration: 'none',
+                    fontSize: { xs: '20px', sm: '24px' },
+                    fontFamily: 'poppins',
+                    fontWeight: 600,
+                    background: 'linear-gradient(135deg, #34e89e 0%, #0f3443 30%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
                     cursor: 'pointer',
-                    transition: 'color 0.3s ease',
+                    textDecoration: 'none',
+                    transition: 'opacity 0.3s ease',
                     '&:hover': {
-                        color: '#34e89e',
+                        opacity: 0.8,
                     }
                 }}
             >
@@ -69,7 +77,7 @@ const Header: React.FC = () => {
             </Typography>
             {isMobile ? (
                 <>
-                    <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleMenuOpen}>
+                    <IconButton edge="start" color="inherit" aria-label="menu" onClick={handleMenuOpen} sx={{ color: 'grey.800', '&:hover': { color: 'primary.main' }}}>
                         <MenuIcon />
                     </IconButton>
                     <Menu
@@ -79,25 +87,21 @@ const Header: React.FC = () => {
                         onClose={handleMenuClose}
                         anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
                         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                        PaperProps={{
+                            elevation: 3,
+                            sx: { mt: 2, minWidth: 200 }
+                        }}
                     >
                         <MenuItem onClick={handleMenuClose} component={Link} to="/">Home</MenuItem>
                         <MenuItem onClick={handleMenuClose} component={Link} to="/venues">Venues</MenuItem>
-                        {!isLoggedIn ? (
-                            loggedOutMenuItems
-                        ) : (
-                            loggedInMenuItems
-                        )}
-                        <Box sx={{ width: '100%', height: '1px', backgroundColor: '#e0e0e0', my: 1 }} />
+                        {!isLoggedIn ? loggedOutMenuItems : loggedInMenuItems}
+                        <Box sx={{ width: '100%', height: '1px', backgroundColor: 'grey.200', my: 1 }} />
                         <MenuItem 
                             onClick={() => {
                                 handleMenuClose();
-                                if (!isLoggedIn) {
-                                    navigate('/login');
-                                } else if (user?.venueManager) {
-                                    navigate('/admin');
-                                } else {
-                                    navigate('/profile');
-                                }
+                                if (!isLoggedIn) navigate('/login');
+                                else if (user?.venueManager) navigate('/admin');
+                                else navigate('profile');
                             }} 
                         >
                             Post your own accommodation
@@ -105,54 +109,86 @@ const Header: React.FC = () => {
                     </Menu>
                 </>
             ) : (
-                <>
-                    <Button color="inherit" component={Link} to="/" sx={{ color: '#e0f7fa', marginLeft: '16px' }}>Home</Button>
-                    <Button color="inherit" component={Link} to="/venues" sx={{ color: '#e0f7fa', marginLeft: '16px' }}>Venues</Button>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Button color="inherit" component={Link} to="/" sx={{ color: 'grey.800', fontWeight: 500, '&:hover': { backgroundColor: 'grey.50', color: 'primary.main' } }}>Home</Button>
+                    <Button color="inherit" component={Link} to="/venues" sx={{ color: 'grey.800', fontWeight: 500, '&:hover': { backgroundColor: 'grey.50', color: 'primary.main' } }}>Venues</Button>
                     
-                    {isLoggedIn && (
-                        <>
-                            {user?.venueManager && (
-                                <Button color="inherit" component={Link} to="/admin" sx={{ color: '#e0f7fa', marginLeft: '16px' }}>
-                                    Admin Dashboard
-                                </Button>
-                            )}
-                        </>
+                    {isLoggedIn && user?.venueManager && (
+                        <Button
+                            component={Link}
+                            to="/admin"
+                            sx={{
+                                color: 'grey.800',
+                                fontWeight: 500,
+                                '&:hover': { backgroundColor: 'grey.50', color: 'primary.main' }
+                            }}
+                        >¨
+                            Admin Dashboard
+                        </Button>
                     )}
+                    
+                    <Box sx={{ mx: 1, width: '1px', height: '24px', bgcolor: 'grey.200' }} />
+
                     <Button
+                        onClick={handleMenuOpen}
                         sx={{ 
                             display: 'flex', 
                             alignItems: 'center', 
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '50px', 
+                            borderRadius: '12px', 
                             padding: ' 6px 12px',
-                            color: '#e0f7fa',
+                            marginLeft: 2,
+                            backgroundColor: 'grey.50',
+                            color: 'grey.800',
                             '&:hover': {
-                                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-                                backgroundColor: '#455a64'
+                                backgroundColor: 'grey.100',
                             }
                         }}
-                        onClick={handleMenuOpen}
                     >
-                        <MenuIcon sx={{ marginRight: '8px' }} />
-                        <Avatar sx={{ bgcolor: '#26c6da', width: 32, height: 32 }} />
+                        <Avatar 
+                            sx={{ 
+                                background: 'linear-gradient(45deg, #34e89e, #0f3443)', 
+                                width: 32, 
+                                height: 32 ,
+                                marginRight: 1
+                            }} 
+                        />
+                        <Typography
+                            sx={{
+                                display: { xs: 'none', sm: 'block' },
+                                fontWeight: 500
+                            }}
+                        >
+                            Account
+                        </Typography>
                     </Button>
 
                     <Menu
                         anchorEl={anchorEl}
                         open={Boolean(anchorEl)}
                         onClose={handleMenuClose}
-                        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+                        PaperProps={{
+                            elevation: 3,
+                            sx: {
+                                mt: 2,
+                                minWidth: 200,
+                                borderRadius: '12px',
+                            }
+                        }}
                     >
-                        {!isLoggedIn ? (
-                            loggedOutMenuItems      
-                        ) : (
-                            loggedInMenuItems
-                        )}
-                        <Box sx={{ width: '100%', height: '1px', backgroundColor: '#e0e0e0', my: 1 }} />
-                        <MenuItem onClick={handleMenuClose} component={Link} to="/post-accommodation">Post your own accommodation</MenuItem>
+                        {!isLoggedIn ? loggedOutMenuItems : loggedInMenuItems}
+                        <Box sx={{ width: '100%', height: '1px', backgroundColor: 'grey.200', my: 1 }} />
+                        <MenuItem 
+                            component={Link} 
+                            to="/post-accommodation"
+                            sx={{
+                                color: 'primary.main',
+                                fontWeight: 500,
+                            }}
+                            >
+                                Post your own accommodation
+                            </MenuItem>
                     </Menu>
-                </>
+                </Box>
             )}
         </Toolbar>
     </AppBar>
