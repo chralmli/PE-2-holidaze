@@ -1,5 +1,21 @@
 import React, { useState } from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, Typography, CircularProgress, Switch, FormControlLabel } from '@mui/material';
+import { 
+  Dialog, 
+  DialogActions, 
+  DialogContent, 
+  DialogTitle, 
+  TextField, 
+  Button, 
+  Typography, 
+  CircularProgress, 
+  Switch, 
+  FormControlLabel,
+  Box,
+  IconButton,
+  Divider,
+  Alert,
+ } from '@mui/material';
+ import { Close as CloseIcon } from '@mui/icons-material';
 
 interface EditProfileModalProps {
   open: boolean;
@@ -37,71 +53,216 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ open, onClose, onUp
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-    <DialogTitle>Edit Profile</DialogTitle>
-    <DialogContent>
-      <TextField
-        label="Avatar URL"
-        value={formData.avatarUrl}
-        onChange={handleChange('avatarUrl')}
-        fullWidth
-        sx={{ marginBottom: 2 }}
-      />
-      <TextField
-        label="Banner URL"
-        value={formData.bannerUrl}
-        onChange={handleChange('bannerUrl')}
-        fullWidth
-        sx={{ marginBottom: 2 }}
-      />
-      <TextField
-        label="Bio"
-        value={formData.bio}
-        onChange={handleChange('bio')}
-        multiline
-        rows={4}
-        fullWidth
-        helperText={bioError || `${formData.bio.length}/${BIO_CHAR_LIMIT} characters`}
-        error={!!bioError}
-        sx={{ marginBottom: 2 }}
-      />
-      <FormControlLabel
-        control={
-          <Switch
-            checked={formData.venueManager}
-            disabled={formData.venueManager}
-            onChange={(e) => setFormData({ ...formData, venueManager: e.target.checked })}
-            color="primary"
-          />
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      fullWidth 
+      maxWidth="sm"
+      PaperProps={{
+        elevation: 0,
+        sx: {
+          borderRadius: 3,
+          overflow: 'hidden',
         }
-        label={
-        formData.venueManager
-        ? 'You are a Venue Manager'
-        : 'Apply to become a Venue Manager'
-        }
-        sx={{ marginBottom: 2 }}
-      />
-      {updateError && (
-        <Typography variant="body2" color="error" sx={{ marginBottom: 2 }}>
-          {updateError}
+      }}
+    >
+    <DialogTitle
+      sx={{
+        p: 3,
+        m: 0,
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        background: 'linear-gradient(135deg, #34e89e 0%, #0f3443 100%)',
+        color: 'white',
+      }}
+    >
+      <Typography variant="h4" component="h2" sx={{ fontWeight: 600 }}>
+        Edit Profile
         </Typography>
+        <IconButton
+          edge="end"
+          color="inherit"
+          onClick={onClose}
+          aria-label="close"
+          sx={{
+            color: 'white',
+            '&:hover': {
+              background: 'rgba(255, 255, 255, 0.1)',
+            },
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+    </DialogTitle>
+
+    <DialogContent sx={{ p: 3 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', mb: 2 }}>
+        {/* Profile URL section */}
+        <Box>
+          <Typography
+            variant="subtitle1"
+            sx={{
+              mt: 2,
+              mb: 2,
+              color: 'primary.main',
+              fontWeight: 500,
+            }}
+          >
+            Profile Images
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <TextField
+            label="Avatar URL"
+            value={formData.avatarUrl}
+            onChange={handleChange('avatarUrl')}
+            fullWidth
+            variant="outlined"
+            placeholder="Enter URL for your profile picture"
+            inputProps={{
+              sx: { borderRadius: 2 },
+            }}
+          />
+          <TextField
+            label="Banner URL"
+            value={formData.bannerUrl}
+            onChange={handleChange('bannerUrl')}
+            fullWidth
+            variant="outlined"
+            placeholder="Enter URL for your profile banner"
+            inputProps={{
+              sx: { borderRadius: 2 },
+            }}
+          />
+        </Box>
+      </Box>
+
+      <Divider />
+      
+      {/* Bio section */}
+      <Box>
+        <Typography
+          variant="subtitle1"
+          sx={{
+            mt: 2,
+            mb: 2,
+            color: 'primary.main',
+            fontWeight: 500,
+          }}
+        >
+          About You
+        </Typography>
+        <TextField
+          label="Bio"
+          value={formData.bio}
+          onChange={handleChange('bio')}
+          multiline
+          rows={4}
+          fullWidth
+          variant="outlined"
+          helperText={
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                color: bioError ? 'error.main' : 'text.secondary',
+              }}
+            >
+              <span>{bioError}</span>
+              <span>{`${formData.bio.length}/${BIO_CHAR_LIMIT}`}</span>
+            </Box>
+          }
+          error={!!bioError}
+          inputProps={{
+            sx: { borderRadius: 2 },
+          }}
+        />
+      </Box>
+
+      <Divider />
+
+      {/* Venue Manager section */}
+      <Box
+        sx={{
+          p: 2,
+          borderRadius: 2,
+          bgcolor: 'grey.50'
+        }}
+      >
+        <FormControlLabel
+          control={
+            <Switch
+              checked={formData.venueManager}
+              disabled={formData.venueManager}
+              onChange={(e) => setFormData({ ...formData, venueManager: e.target.checked })}
+              color="primary"
+            />
+          }
+          label={
+            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+              {formData.venueManager
+                ? 'You are a Venue Manager'
+                : 'Apply to become a Venue Manager'}
+            </Typography>
+          }
+        />
+      </Box>
+
+      {/* Error message */}
+      {updateError && (
+        <Alert
+          severity="error"
+          sx={{
+            borderRadius: 2,
+            '& .MuiAlert-icon': {
+              color: 'error.main'
+            }
+          }}
+        >
+          {updateError}
+        </Alert>
       )}
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={onClose} color="secondary">
+    </Box>
+  </DialogContent>
+
+    <DialogActions
+      sx={{
+        p: 3,
+        gap: 2,
+        borderTop: '1px solid',
+        borderColor: 'grey.100',
+      }}
+    >
+      <Button 
+        onClick={onClose}
+        variant="outlined"
+        sx={{
+          borderRadius: 2,
+          px: 3,
+        }}
+      >
         Cancel
       </Button>
       <Button
         variant="contained"
-        color="primary"
+        color="gradient"
         onClick={handleSubmit}
         disabled={updating || !!bioError}
+        sx={{
+          borderRadius: 2,
+          px: 3,
+          minWidth: 120,
+        }}
       >
-        {updating ? <CircularProgress size={24} /> : 'Save Changes'}
+        {updating ? (
+          <CircularProgress size={24} />
+        ) : (
+          'Save Changes'
+        )}
       </Button>
     </DialogActions>
   </Dialog>
-  )
-}
+  );
+};
 
 export default EditProfileModal;

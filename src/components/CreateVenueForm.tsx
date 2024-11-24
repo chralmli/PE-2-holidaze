@@ -1,18 +1,28 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, Checkbox, FormControlLabel, Alert, Grid, Paper, Divider, FormGroup, InputAdornment, styled } from '@mui/material';
+import { 
+  Box, 
+  TextField, 
+  Button, 
+  Typography,
+  Alert,
+  Grid, 
+  Paper, 
+  Divider,
+  InputAdornment, 
+  Container, 
+  CircularProgress 
+} from '@mui/material';
 import {
-  Wifi, LocalParking, FreeBreakfast, Pets, LocationOn, Image, Info, } from '@mui/icons-material';
+  Wifi, 
+  LocalParking, 
+  FreeBreakfast, 
+  Pets,
+  LocationOn, 
+  Image, 
+  Info, 
+  Add as AddIcon 
+} from '@mui/icons-material';
 import { createVenue } from '../services/venueService';
-
-const FormSection = styled(Box)(({ theme }) => ({
-  marginBottom: theme.spacing(4),
-}));
-
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(3),
-  borderRadius: theme.spacing(2),
-  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-}));
 
 interface FormValues {
   name: string;
@@ -66,6 +76,7 @@ const CreateVenueForm: React.FC = () => {
       pets: false,
     },
   });
+
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -76,7 +87,7 @@ const CreateVenueForm: React.FC = () => {
     }));
   };
 
-  const handleLocationChange = (field: string, value: string) => {
+  const handleLocationChange = (field: keyof FormValues['location'], value: string) => {
     setFormValues((prev) => ({
       ...prev,
       location: {
@@ -86,7 +97,7 @@ const CreateVenueForm: React.FC = () => {
     }));
   };
 
-  const handleMediaChange = (field: string, value: string) => {
+  const handleMediaChange = (field: keyof FormValues['media'], value: string) => {
     setFormValues((prev) => ({
       ...prev,
       media: {
@@ -96,7 +107,7 @@ const CreateVenueForm: React.FC = () => {
     }));
   };
 
-  const handleAmenityChange = (field: string, value: boolean) => {
+  const handleAmenityChange = (field: keyof FormValues['amenities'], value: boolean) => {
     setFormValues((prev) => ({
       ...prev,
       amenities: {
@@ -196,22 +207,63 @@ const CreateVenueForm: React.FC = () => {
   };
 
 return (
-  <StyledPaper>
-    <Typography variant="h4" gutterBottom sx={{ mb: 4, fontWeight: 'bold' }}>
+  <Container maxWidth="md">
+    <Paper
+      sx={{
+        p: { xs: 2, sm: 3, md: 4 },
+        borderRadius: 4,
+        background: 'rgba(255, 255, 255, 0.95)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid',
+        borderColor: 'grey.100',
+        mb: 4,
+      }}
+  >
+    <Typography 
+      variant="h4" 
+      sx={{ 
+        mb: 4, 
+        background: 'linear-gradient(135deg, #34e89e, #0f3443)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        fontWeight: 700,
+      }}
+    >
       Create a new venue
     </Typography>
 
     {message &&  (
-      <Alert severity={message.type} onClose={() => setMessage(null)} sx={{ mb: 3}}>
+      <Alert 
+        severity={message.type} 
+        onClose={() => setMessage(null)} 
+        sx={{ 
+          mb: 4,
+          borderRadius: 2,
+          '& .MuiAlert-icon': {
+            alignItems: 'center'
+          }
+        }}
+      >
         {message.text}
       </Alert>
     )}
 
-    <FormSection>
-      <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Info />
-        Basic Information
+    {/* Basic information section */}
+    <Box sx={{ mb: 6 }}>
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 1,
+          mb: 3,
+          color: 'primary.main',
+          fontWeight: 600,
+        }}
+      >
+        <Info /> Basic Information
       </Typography>
+
       <Grid container spacing={3}>
           <Grid item xs={12}>
             <TextField
@@ -220,6 +272,9 @@ return (
               value={formValues.name}
               onChange={(e) => handleInputChange('name', e.target.value)}
               required
+              InputProps={{
+                sx: { borderRadius: 2 }
+              }}
             />
         </Grid>
         <Grid item xs={12}>
@@ -231,6 +286,10 @@ return (
             value={formValues.description}
             onChange={(e) => handleInputChange('description', e.target.value)}
             required
+            InputProps={{
+              sx: { borderRadius: 2 }
+            }}
+            placeholder="Describe your venue in detail..."
           />
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -244,6 +303,7 @@ return (
             InputProps={{
               startAdornment: <InputAdornment position="start">NOK</InputAdornment>,
               inputProps: { min: 0 },
+              sx: { borderRadius: 2 }
             }}
           />
         </Grid>
@@ -255,16 +315,30 @@ return (
             value={formValues.maxGuests}
             onChange={(e) => handleInputChange('maxGuests', e.target.value)}
             required
-            InputProps={{ inputProps: { min: 1 } }}
+            InputProps={{ 
+              inputProps: { min: 1 },
+              sx: { borderRadius: 2 }
+            }}
           />
         </Grid>
       </Grid>
-    </FormSection>
+    </Box>
 
     <Divider sx={{ my: 4 }} />
 
-    <FormSection>
-      <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    {/* Location Section */}
+    <Box sx={{ mb: 6 }}>
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 1,
+          mb: 3,
+          color: 'primary.main',
+          fontWeight: 600,
+        }}
+      >
         <LocationOn /> Location Details
       </Typography>
       <Grid container spacing={3}>
@@ -273,7 +347,10 @@ return (
             fullWidth
             label="Address"
             value={formValues.location.address}
-            onChange={(e) => handleLocationChange('location.address', e.target.value)}
+            onChange={(e) => handleLocationChange('address', e.target.value)}
+            InputProps={{
+              sx: { borderRadius: 2 }
+            }}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -281,7 +358,10 @@ return (
             fullWidth
             label="City"
             value={formValues.location.city}
-            onChange={(e) => handleLocationChange('location.city', e.target.value)}
+            onChange={(e) => handleLocationChange('city', e.target.value)}
+            InputProps={{
+              sx: { borderRadius: 2 }
+            }}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -289,7 +369,10 @@ return (
             fullWidth
             label="ZIP"
             value={formValues.location.zip}
-            onChange={(e) => handleLocationChange('location.zip', e.target.value)}
+            onChange={(e) => handleLocationChange('zip', e.target.value)}
+            InputProps={{
+              sx: { borderRadius: 2 }
+            }}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -297,7 +380,10 @@ return (
             fullWidth
             label="Country"
             value={formValues.location.country}
-            onChange={(e) => handleLocationChange('location.country', e.target.value)}
+            onChange={(e) => handleLocationChange('country', e.target.value)}
+            InputProps={{
+              sx: { borderRadius: 2 }
+            }}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -305,7 +391,10 @@ return (
             fullWidth
             label="Continent"
             value={formValues.location.continent}
-            onChange={(e) => handleLocationChange('location.continent', e.target.value)}
+            onChange={(e) => handleLocationChange('continent', e.target.value)}
+            InputProps={{
+              sx: { borderRadius: 2 }
+            }}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -314,7 +403,10 @@ return (
             label="Latitude"
             type="number"
             value={formValues.location.latitude}
-            onChange={(e) => handleLocationChange('location.latitude', e.target.value)}
+            onChange={(e) => handleLocationChange('latitude', e.target.value)}
+            InputProps={{
+              sx: { borderRadius: 2 }
+            }}
           />
         </Grid>
         <Grid item xs={12} sm={6}>
@@ -323,18 +415,31 @@ return (
             label="Longitude"
             type="number"
             value={formValues.location.longitude}
-            onChange={(e) => handleLocationChange('location.longitude', e.target.value)}
+            onChange={(e) => handleLocationChange('longitude', e.target.value)}
+            InputProps={{
+              sx: { borderRadius: 2 }
+            }}
           />
         </Grid>
       </Grid>
-    </FormSection>
+    </Box>
 
     <Divider sx={{ my: 4 }} />
 
-    <FormSection>
-      <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+    {/* Media section */}
+    <Box sx={{ mb: 6 }}>
+      <Typography 
+        variant="h6" 
+        sx={{ 
+          mb: 3,
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 1 
+        }}
+      >
         <Image /> Media
       </Typography>
+
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <TextField
@@ -342,6 +447,10 @@ return (
             label="Image URL"
             value={formValues.media.url}
             onChange={(e) => handleMediaChange('url', e.target.value)}
+            InputProps={{
+              sx: { borderRadius: 2 }
+            }}
+            placeholder="Enter the URL of your venue image"
           />
         </Grid>
         <Grid item xs={12}>
@@ -350,84 +459,110 @@ return (
             label="Image Description"
             value={formValues.media.alt}
             onChange={(e) => handleMediaChange('alt', e.target.value)}
+            InputProps={{
+              sx: { borderRadius: 2 }
+            }}
+            placeholder="Describe your image for accessibility"
           />
         </Grid>
       </Grid>
-    </FormSection>
+    </Box>
 
     <Divider sx={{ my: 4 }} />
 
-    <FormSection>
-      <Typography variant="h6" gutterBottom>
+    <Box sx={{ mb: 6 }}>
+      <Typography 
+        variant="h6"
+        sx={{
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: 1,
+          mb: 3,
+          color: 'primary.main',
+          fontWeight: 600,
+        }}
+      >
         Amenities
       </Typography>
-      <FormGroup row sx={{ gap: 3}}>
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={formValues.amenities.wifi}
-              onChange={(e) => handleAmenityChange('wifi', e.target.checked)}
-              icon={<Wifi color="action" />}
-              checkedIcon={<Wifi color="secondary" />}
-            />
-          }
-          label="Wifi"
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={formValues.amenities.parking}
-              onChange={(e) => handleAmenityChange('parking', e.target.checked)}
-              icon={<LocalParking color="action" />}
-              checkedIcon={<LocalParking color="secondary" />}
-            />
-          }
-          label="Parking"
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={formValues.amenities.breakfast}
-              onChange={(e) => handleAmenityChange('breakfast', e.target.checked)}
-              icon={<FreeBreakfast color="action" />}
-              checkedIcon={<FreeBreakfast color="secondary" />}
-            />
-          }
-          label="Breakfast"
-        />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={formValues.amenities.pets}
-              onChange={(e) => handleAmenityChange('pets', e.target.checked)}
-              icon={<Pets color="action" />}
-              checkedIcon={<Pets color="secondary" />}
-            />
-          }
-          label="Pets Allowed"
-        />
-      </FormGroup>
-    </FormSection>
 
-    <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
+      <Grid container spacing={2}>
+        {[
+          { key: 'wifi', icon: Wifi, label: 'Wifi' },
+          { key: 'parking', icon: LocalParking, label: 'Parking' },
+          { key: 'breakfast', icon: FreeBreakfast, label: 'Breakfast' },
+          { key: 'pets', icon: Pets, label: 'Pets Allowed' },
+        ].map(({ key, icon: Icon, label }) => (
+          <Grid item xs={6} sm={3} key={key}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2,
+                borderRadius: 2,
+                border: '1px solid',
+                borderColor: formValues.amenities[key as keyof typeof formValues.amenities]
+                  ? 'secondary.main'
+                  : 'grey.200',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    borderColor: 'secondary.main',
+                    transform: 'translateY(-2px)',
+                  },
+              }}
+              onClick={() => handleAmenityChange(
+                key as keyof typeof formValues.amenities,
+                !formValues.amenities[key as keyof typeof formValues.amenities]
+              )}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 1,
+                }}
+              >
+                <Icon
+                  color={formValues.amenities[key as keyof typeof formValues.amenities] ? 'secondary' : 'action'}
+                />
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: formValues.amenities[key as keyof typeof formValues.amenities]
+                    ? 'secondary.main'
+                    : 'text.secondary',
+                  fontWeight: 500,
+                  }}
+                >
+                  {label}
+              </Typography>
+            </Box>
+            </Paper>
+          </Grid>
+        ))}
+      </Grid>
+    </Box>
+
+    {/* Submit button */}
+    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
       <Button 
         variant="contained"
-        color="primary"
+        color="gradient"
         size="large"
         onClick={handleCreateVenue}
         disabled={loading}
+        startIcon={loading ? <CircularProgress size={20} /> : <AddIcon />}
         sx={{
           minWidth: 200,
-          background: 'linear-gradient(135deg, #34e89e, #0f3443)',
-          '&:hover': {
-            background: 'linear-gradient(135deg, #0f3443, #34e89e)',
-          },
+          height: '48px',
+          borderRadius: 3,
         }}
       >
         {loading ? 'Creating...' : 'Create Venue'}
         </Button>
       </Box>
-    </StyledPaper>
+    </Paper>
+  </Container>
   );
 }
 
