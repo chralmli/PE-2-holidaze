@@ -17,41 +17,82 @@ interface AuthContextProps {
     user: User | null;
     login: (userData: User) => void;
     logout: () => void;
+    checkAuthStatus: () => boolean;
+}
+
+interface AuthContextProps {
+    isLoggedIn: boolean;
+    user: User | null;
+    login: (userData: User) => void;
+    logout: () => void;
+    checkAuthStatus: () => boolean;
 }
 
 interface AuthProviderProps {
     children: React.ReactNode;
 }
 
-const AuthContext = createContext<AuthContextProps>({
+export const AuthContext = createContext<AuthContextProps>({
     isLoggedIn: false,
     user: null,
     login: () => {},
     logout: () => {},
+    checkAuthStatus: () => false,
 });
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
+    const [isInitialized, setIsInitialized] = useState(false);
     const navigate = useNavigate();
 
     // Check localStorage to see if user is already logged in
+    const checkAuthStatus = () => {
+        const storedUser = localStorage.getItem('user');
+        const storedToken = localStorage.getItem('accessToken');
+
+        if (!storedUser || !storedToken) {
+            return false;
+        }
+
+        try {
+            const userData = JSON.parse(storedUser);
+            // Add token validation if needed
+            return true;
+        } catch {
+            localStorage.removeItem('user');
+            localStorage.removeItem('accessToken');
+            return false;
+        }
+    };
+
+    // Initial auth state
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
-            setUser(JSON.parse(storedUser));
+            try {
+                const userData = JSON.parse(storedUser);
+                setUser(userData); 
+            } catch (error) {
+                console.error('Failed to parse stored user data:', error);
+                localStorage.removeItem('user');
+                localStorage.removeItem('accessToken');
+            }
         }
+        setIsInitialized(true);
     }, []);
 
     // Login function
     const login = (userData: User) => {
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
+        localStorage.setItem('accessToken', userData.accessToken);
     };
 
     // Logout function
     const logout = () => {
         setUser(null);
         localStorage.removeItem('user');
+        localStorage.removeItem('accessToken');
         navigate('/login');
     };
 
@@ -62,6 +103,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 user,
                 login,
                 logout,
+                checkAuthStatus,
             }}
         >
             {children}

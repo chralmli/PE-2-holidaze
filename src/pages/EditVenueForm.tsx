@@ -132,120 +132,123 @@ const EditVenueForm: React.FC = () => {
 
   // Main component rendering
   return (
-    <Box 
-      sx={{ 
-            maxWidth: '800px',
-            margin: '40px auto',
-            padding: '24px',
-            borderRadius: '10px',
-            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-            backgroundColor: '#ffffff',
-          }}>
-      <Typography variant="h5" sx={{ mb: 2 }}>
-        Edit Venue
-      </Typography>
-
-      {/* Display success or error message */}
-      {message && (
-        <Typography
-          variant="body1"
-          color={message.type ==='success'? 'success.main' : 'error.main'}
-          sx={{ mb: 2 }}
-        >
-          {message.text}
+    <Box sx={{ minHeight: '100vh' }}>
+      <Box 
+        sx={{ 
+              maxWidth: '800px', 
+              margin: '40px auto',
+              padding: '24px',
+              borderRadius: '10px',
+              boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+              backgroundColor: '#ffffff',
+            }}>
+        <Typography variant="h5" sx={{ mb: 2 }}>
+          Edit Venue
         </Typography>
-      )}
 
-      {/* Venue fields */}
-      <TextField
-        label="Venue Name"
-        value={venue.name}
-        onChange={(e) => setVenue({...venue, name: e.target.value })}
-        fullWidth
-        sx={{ mb: 2}}
-      />
-      <TextField
-        label="Description"
-        variant="outlined"
-        multiline
-        rows={4}
-        value={venue.description}
-        onChange={(e) => setVenue({...venue, description: e.target.value })}
-        fullWidth
-        sx={{ mb: 2}}
-      />
-      <TextField
-        label="Price per Night"
-        type="number"
-        value={venue.price}
-        onChange={(e) => setVenue({...venue, price: Number(e.target.value) })}
-        fullWidth
-        sx={{ mb: 2}}
-      />
-      <TextField
-        label="Max guests"
-        type="number"
-        value={venue.maxGuests}
-        onChange={(e) => setVenue({...venue, maxGuests: Number(e.target.value) })}
-        fullWidth
-        sx={{ mb: 2}}
-      />
+        {/* Display success or error message */}
+        {message && (
+          <Typography
+            variant="body1"
+            color={message.type ==='success'? 'success.main' : 'error.main'}
+            sx={{ mb: 2 }}
+          >
+            {message.text}
+          </Typography>
+        )}
 
-      {/* Amenities */}
-      <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>Amenities</Typography>
-      <FormControlLabel
-        control={<Checkbox checked={venue.meta.wifi} onChange={(e) => setVenue({...venue, meta: {...venue.meta, wifi: e.target.checked}})} />}
-        label="Wifi"
-      />
-      <FormControlLabel
-        control={<Checkbox checked={venue.meta.parking} onChange={(e) => setVenue({...venue, meta: {...venue.meta, parking: e.target.checked}})} />}
-        label="Parking"
-      />
-      <FormControlLabel
-        control={<Checkbox checked={venue.meta.breakfast} onChange={(e) => setVenue({...venue, meta: {...venue.meta, breakfast: e.target.checked}})} />}
-        label="Breakfast"
-      />
-      <FormControlLabel
-        control={<Checkbox checked={venue.meta.pets} onChange={(e) => setVenue({...venue, meta: {...venue.meta, pets: e.target.checked}})} />}
-        label="Pets"
-      />
+        {/* Venue fields */}
+        <TextField
+          label="Venue Name"
+          value={venue.name}
+          onChange={(e) => setVenue({...venue, name: e.target.value })}
+          fullWidth
+          sx={{ mb: 2}}
+        />
+        <TextField
+          label="Description"
+          variant="outlined"
+          multiline
+          rows={4}
+          value={venue.description}
+          onChange={(e) => setVenue({...venue, description: e.target.value })}
+          fullWidth
+          sx={{ mb: 2}}
+        />
+        <TextField
+          label="Price per Night"
+          type="number"
+          value={venue.price}
+          onChange={(e) => setVenue({...venue, price: Number(e.target.value) })}
+          fullWidth
+          sx={{ mb: 2}}
+        />
+        <TextField
+          label="Max guests"
+          type="number"
+          value={venue.maxGuests}
+          onChange={(e) => setVenue({...venue, maxGuests: Number(e.target.value) })}
+          fullWidth
+          sx={{ mb: 2}}
+        />
 
-      {/* Action buttons */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
-        <Button 
-          onClick={handleUpdateVenue}
-          variant="contained" 
-          color="primary"
-          sx={{ flexGrow: 1, mr: 1 }}
-        >
-          Update Venue
-        </Button>
-        <Button 
-            onClick={() => navigate(-1)}
+        {/* Amenities */}
+        <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>Amenities</Typography>
+        <FormControlLabel
+          control={<Checkbox checked={venue.meta.wifi} onChange={(e) => setVenue({...venue, meta: {...venue.meta, wifi: e.target.checked}})} />}
+          label="Wifi"
+        />
+        <FormControlLabel
+          control={<Checkbox checked={venue.meta.parking} onChange={(e) => setVenue({...venue, meta: {...venue.meta, parking: e.target.checked}})} />}
+          label="Parking"
+        />
+        <FormControlLabel
+          control={<Checkbox checked={venue.meta.breakfast} onChange={(e) => setVenue({...venue, meta: {...venue.meta, breakfast: e.target.checked}})} />}
+          label="Breakfast"
+        />
+        <FormControlLabel
+          control={<Checkbox checked={venue.meta.pets} onChange={(e) => setVenue({...venue, meta: {...venue.meta, pets: e.target.checked}})} />}
+          label="Pets"
+        />
+
+        {/* Action buttons */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
+          <Button 
+            onClick={handleUpdateVenue}
             variant="contained" 
-            color="secondary"
+            color="primary"
             sx={{ flexGrow: 1, mr: 1 }}
           >
-            Cancel
-        </Button>
-        <Button 
-            onClick={handleDeleteVenue}
-            variant="contained" 
-            color="error"
-            sx={{ flexGrow: 1, mr: 1 }}
-          >
-            Delete Venue
-        </Button>
+            Update Venue
+          </Button>
+          <Button 
+              onClick={() => navigate(-1)}
+              variant="contained" 
+              color="secondary"
+              sx={{ flexGrow: 1, mr: 1 }}
+            >
+              Cancel
+          </Button>
+          <Button 
+              onClick={handleDeleteVenue}
+              variant="contained" 
+              color="error"
+              sx={{ flexGrow: 1, mr: 1 }}
+            >
+              Delete Venue
+          </Button>
+        </Box>
+
+        {/* Map */}
+        {/* Implement map functionality here */}
+
+        {/* Additional fields */}
+        {/* Implement additional fields as needed */}
+
+
       </Box>
-
-      {/* Map */}
-      {/* Implement map functionality here */}
-
-      {/* Additional fields */}
-      {/* Implement additional fields as needed */}
-
-
     </Box>
+    
   );
 };
 

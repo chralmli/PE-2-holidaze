@@ -200,7 +200,7 @@ const Home: React.FC = () => {
      * Validates inputs and redirects the user to the venues page with the appropriate query parameters.
      */
     const handleSearch = () => {
-        if (!validateDates()) return;
+        if ((searchParams.checkIn || searchParams.checkOut) && !validateDates()) return;
 
         const queryParams = new URLSearchParams({
             location: searchParams.location,
@@ -309,6 +309,7 @@ const Home: React.FC = () => {
                                     <SuggestionsList
                                         suggestions={suggestions}
                                         isLoading={loading.suggestions}
+                                        searchTerm={searchParams.location}
                                         onSelectSuggestion={(venueName) => {
                                             handleInputChange('location', venueName);
                                             setSuggestions([]);

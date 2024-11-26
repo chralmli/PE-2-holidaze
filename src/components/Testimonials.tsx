@@ -71,7 +71,7 @@ const Testimonials: React.FC = () => {
             color="text.secondary"
             sx={{ maxWidth: '600px', mx: 'auto' }}
           >
-            Dont just take out word for it - hear from some of our satisfied customers
+            Don't just take our word for it - hear from some of our satisfied customers
           </Typography>
         </Box>
 

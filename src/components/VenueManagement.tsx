@@ -10,9 +10,10 @@ import BookingsModal from './BookingsModal';
 import useBookingModal from '../hooks/useBookingModal';
 
 const VenueManagement: React.FC = () => {
-  const { profile, loading: profileLoading } = useUserProfile();
+  const { profile, loading: profileLoading, error: profileError } = useUserProfile();
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   // State to manage bookings modal visibility and selected venue ID
@@ -20,15 +21,22 @@ const { isModalOpen, selectedVenueId, openModal, closeModal } = useBookingModal(
 
   useEffect(() => {
     const fetchVenues = async () => {
-      if (!profile) return;
+      if (!profile?.name) {
+        setError('No user profile found');
+        return;
+      }
 
       try {
         setLoading(true);
         // Fetch venues owned by the current logged-in user
         const venuesData = await getVenuesByUserId(profile.name);
         setVenues(venuesData);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching venues:', error);
+        setError(error?.response?.data?.message || 'Failed to fetch venues');
+        if (error?.response?.status === 401) {
+          navigate('/login');
+        }
       } finally {
         setLoading(false);
       }
@@ -37,7 +45,17 @@ const { isModalOpen, selectedVenueId, openModal, closeModal } = useBookingModal(
     if (!profileLoading) {
       fetchVenues();
     }
-  }, [profile, profileLoading]);
+  }, [profile, profileLoading, navigate]);
+
+  if (error || profileError) {
+    return (
+      <Box sx={{ textAlign: 'center', mt: 4 }}>
+        <Typography color="error">
+          {error || profileError}
+        </Typography>
+      </Box>
+    );
+  }
 
   const handleDeleteVenueClick = (venueId: string) => {
     handleDeleteVenue(venueId, () => {

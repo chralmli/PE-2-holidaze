@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { CssBaseline, GlobalStyles, Alert, Snackbar } from '@mui/material';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import PostAccommodationRoute from './pages/PostAccommodationRoute';
 import Register from './pages/Register';
 import Login from './pages/Login';
+import ProtectedRoute from './components/ProtectedRoute';
 import VenueDetails from './pages/VenueDetails';
 import EditVenueForm from './pages/EditVenueForm';
 import AdminDashboard from './pages/AdminDashboard';
@@ -78,22 +79,18 @@ const App: React.FC = () => {
           <Route
             path="/profile"
             element={
-              isLoggedIn ? (
+              <ProtectedRoute>
                 <UserProfile />
-              ) : (
-                <Navigate to="/login" />
-              )
+              </ProtectedRoute>
             }
           />
           {/* Only allow venue managers to access the admin dashboard */}
           <Route
             path="/admin"
             element={
-              isLoggedIn && profile?.venueManager ? (
-                <AdminDashboard />
-              ) : (
-                <Navigate to="/login" />
-              )
+              <ProtectedRoute>
+                <AdminDashboard /> 
+              </ProtectedRoute>
             }
           />
         </Routes>

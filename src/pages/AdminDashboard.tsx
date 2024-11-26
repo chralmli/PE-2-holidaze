@@ -5,7 +5,8 @@
  * It provides tabs to manage their profile, existing venues, and create new venues.
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, Typography, Tabs, Tab, CircularProgress } from '@mui/material';
 import useUserProfile from '../hooks/useUserProfile';
 import VenueManagement from '../components/VenueManagement';
@@ -24,7 +25,30 @@ import CreateVenueForm from '../components/CreateVenueForm';
  */
 const AdminDashboard: React.FC = () => {
   const { profile, loading: profileLoading, error } = useUserProfile();
-  const [tabIndex, setTabIndex] = useState(0);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // get current tab from URL
+  const getCurrentTab = () => {
+    const path = location.pathname.split('/')[2] || 'profile';
+    switch (path) {
+      case 'profile':
+        return 0;
+      case 'manage-venues':
+        return 1;
+      case 'create-venue':
+        return 2;
+      default:
+        return 0;
+    }
+  };
+
+  const [tabIndex, setTabIndex] = useState(getCurrentTab());
+
+  // Add effect to handle auth state
+  useEffect(() => {
+    setTabIndex(getCurrentTab());
+  }, [location]);
 
   /**
    * Handles tab change events
@@ -35,6 +59,18 @@ const AdminDashboard: React.FC = () => {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
   };
+
+  // Protect the component with auth check
+  if (!profile?.venueManager) {
+    return (
+      <Box sx={{ textAlign: 'center', marginTop: '20px' }}>
+        <Typography variant="h5">Access Denied</Typography>
+        <Typography variant="body1">
+          Please log in with a Venue Manager account to view this page.
+        </Typography>
+      </Box>
+    );
+  }
 
   // handle loading state
   if (profileLoading) {
@@ -65,6 +101,19 @@ const AdminDashboard: React.FC = () => {
     );
   }
 
+  const renderTabContent = () => {
+    switch (tabIndex) {
+      case 0:
+        return <UserProfile />;
+      case 1:
+        return <VenueManagement />;
+      case 2:
+        return <CreateVenueForm />;
+      default:
+        return <UserProfile />;
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -82,18 +131,20 @@ const AdminDashboard: React.FC = () => {
       </Typography>
 
       {/* Tabs for venue manager */}
-      <Tabs value={tabIndex} onChange={handleTabChange} variant="fullWidth">
+      <Tabs value={tabIndex} onChange={handleTabChange} variant="fullWidth" sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tab label="Profile" />
         <Tab label="Manage Venues" />
         <Tab label="Create Venue" />
       </Tabs>
 
-      {/* Render components based on selected tab */}
-      {tabIndex === 0 && <UserProfile />}
-      {tabIndex === 1 && <VenueManagement />}
-      {tabIndex === 2 && <CreateVenueForm />}
+      <Box sx={{ mt: 2 }}>
+        {/* Render components based on selected tab */}
+        <React.Suspense fallback={<CircularProgress />}>
+          {renderTabContent()}
+        </React.Suspense>
+      </Box>
     </Box>
-  )
-}
+  );
+};
 
 export default AdminDashboard;

@@ -170,7 +170,7 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, 
                                 label={venue.rating.toFixed(1)}
                                 size="small"
                                 sx={{ 
-                                    backgroundColor: alpha('#FFD700', 0.1),
+                                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
                                     borderRadius: 2,
                                     '.MuiChip-label': {
                                         px: 1,
@@ -300,7 +300,7 @@ const VenueCard: React.FC<VenueCardProps> = ({ venue, onDelete, onViewBookings, 
                                     color: 'grey.600',
                                     '&:hover': {
                                         color: 'primary.main',
-                                        backgroundColor: alpha('primary.main', 0.08)
+                                        backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.08)
                                     }
                                 }}
                             >
