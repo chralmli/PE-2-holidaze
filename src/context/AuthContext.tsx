@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CircularProgress } from '@mui/material';
 
 
 interface User {
@@ -9,7 +10,7 @@ interface User {
     avatar?: { url: string; alt: string };
     banner?: { url: string; alt: string };
     accessToken: string;
-    venueManager?: boolean;
+    venueManager: boolean;
 }
 
 interface AuthContextProps {
@@ -18,14 +19,7 @@ interface AuthContextProps {
     login: (userData: User) => void;
     logout: () => void;
     checkAuthStatus: () => boolean;
-}
-
-interface AuthContextProps {
-    isLoggedIn: boolean;
-    user: User | null;
-    login: (userData: User) => void;
-    logout: () => void;
-    checkAuthStatus: () => boolean;
+    isInitialized?: boolean;
 }
 
 interface AuthProviderProps {
@@ -45,32 +39,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [isInitialized, setIsInitialized] = useState(false);
     const navigate = useNavigate();
 
-    // Check localStorage to see if user is already logged in
-    const checkAuthStatus = () => {
-        const storedUser = localStorage.getItem('user');
-        const storedToken = localStorage.getItem('accessToken');
-
-        if (!storedUser || !storedToken) {
-            return false;
-        }
-
-        try {
-            const userData = JSON.parse(storedUser);
-            // Add token validation if needed
-            return true;
-        } catch {
-            localStorage.removeItem('user');
-            localStorage.removeItem('accessToken');
-            return false;
-        }
-    };
-
     // Initial auth state
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
+
         if (storedUser) {
             try {
                 const userData = JSON.parse(storedUser);
+                userData.venueManager = !!userData.venueManager;
                 setUser(userData); 
             } catch (error) {
                 console.error('Failed to parse stored user data:', error);
@@ -83,9 +59,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Login function
     const login = (userData: User) => {
+        const updatedUserData = {
+            ...userData,
+            venueManager: !!userData.venueManager,
+        };
         setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
-        localStorage.setItem('accessToken', userData.accessToken);
+        localStorage.setItem('user', JSON.stringify(updatedUserData));
+        localStorage.setItem('accessToken', updatedUserData.accessToken);
     };
 
     // Logout function
@@ -96,6 +76,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         navigate('/login');
     };
 
+    const checkAuthStatus = () => {
+        const token = localStorage.getItem('accessToken');
+        return !!user || !!token;
+    }
+
+    if (!isInitialized) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                <CircularProgress />
+            </div>
+        )
+    }
+
     return (
         <AuthContext.Provider
             value={{
@@ -104,6 +97,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 login,
                 logout,
                 checkAuthStatus,
+                isInitialized,
             }}
         >
             {children}

@@ -11,7 +11,6 @@ import { styled } from '@mui/material/styles';
 import { Dashboard as DashboardIcon } from '@mui/icons-material';
 import { Booking } from '../types/Booking';
 import { Venue } from '../types/Venue';
-import useUserProfile from '../hooks/useUserProfile';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { updateUserProfile } from '../services/userService';
 import { useAuth } from '../context/AuthContext';
@@ -125,9 +124,8 @@ const DashboardButton = styled(Button)(({ theme }) => ({
  * @component
  * @returns {React.FC} - User profile page.
  */
-const UserProfile: React.FC = () => {
+const UserProfile: React.FC<{ profile: any }> = ({ profile }) => {
   const { user, login } = useAuth();
-  const { profile, loading, error } = useUserProfile();
   const [updating, setUpdating] = useState<boolean>(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [editProfileOpen, setEditProfileOpen] = useState<boolean>(false);
@@ -147,7 +145,17 @@ const UserProfile: React.FC = () => {
       setUpdating(true);
       setUpdateError(null);
       await updateUserProfile(user.name, updates);
-      login({ ...user, ...updates });
+
+      // Update auth state with new profile data
+      const updatedUser = {
+        ...user,
+        bio: updates.bio,
+        avatar: { url: updates.avatarUrl, alt: 'User avatar' },
+        banner: { url: updates.bannerUrl, alt: 'User banner' },
+        venueManager: !!updates.venueManager
+      };
+
+      login(updatedUser);
       setEditProfileOpen(false);
     } catch (error) {
       console.error('Error updating user profile:', error);
@@ -158,7 +166,7 @@ const UserProfile: React.FC = () => {
   }, [user, login]);
 
   // Loading state
-  if (loading) {
+  if (!profile) {
     return (
       <ProfileContainer>
         <ProfileCard>
@@ -174,10 +182,10 @@ const UserProfile: React.FC = () => {
   }
   
   // Error state
-  if (error) {
+  if (profile.error) {
     return (
       <ProfileContainer>
-        <Alert severity="error" sx={{ mb: 2, borderRadius: 2}}>{error}</Alert>
+        <Alert severity="error" sx={{ mb: 2, borderRadius: 2}}>{profile.error}</Alert>
       </ProfileContainer>
     );
   }
@@ -210,7 +218,7 @@ const UserProfile: React.FC = () => {
           <VenueSection
             venues={profile.venues}
             venueCount={profile._count?.venues || 0}
-            isLoading={loading}
+            isLoading={profile.loading}
           />
         </Section>
 
@@ -220,7 +228,7 @@ const UserProfile: React.FC = () => {
           <BookingSection
             bookings={profile.bookings}
             bookingCount={profile._count?.bookings || 0}
-            isLoading={loading}
+            isLoading={profile.loading}
           />
         </Section>
 
@@ -234,7 +242,9 @@ const UserProfile: React.FC = () => {
                 <DashboardButton
                   variant="contained"
                   startIcon={<DashboardIcon />}
-                  onClick={() => navigate('/admin')}
+                  onClick={() => {
+                      navigate('/admin');
+                  }}
                   fullWidth
                 >
                   Open Admin Dashboard

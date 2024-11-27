@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CssBaseline, GlobalStyles, Alert, Snackbar } from '@mui/material';
+import { CssBaseline, GlobalStyles, Alert, Snackbar, Box, CircularProgress } from '@mui/material';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -22,23 +22,33 @@ import { UserProfileResponse } from './types/User';
 const App: React.FC = () => {
   const { isLoggedIn, user } = useAuth();
   const [profile, setProfile] = useState<UserProfileResponse['data'] | null>(null);
+  const [profileLoading, setProfileLoading] = useState<boolean>(true);
   const [showMessage, setShowMessage] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
-      if (!user) return;
+      if (!user) {
+        setProfileLoading(false);
+        return;
+      }
 
       try {
+        setProfileLoading(true);
         const response = await getUserProfile(user.name);
         setProfile(response.data);
       } catch(error) {
         console.error('Error fetching user profile:', error);
+      } finally {
+        setProfileLoading(false);
       }
     };
 
     if (isLoggedIn) {
+      console.log('User is logged in, fetching profile...');
       fetchUserProfile();
+    } else {
+      setProfileLoading(false);
     }
   }, [isLoggedIn, user]);
 
@@ -80,16 +90,29 @@ const App: React.FC = () => {
             path="/profile"
             element={
               <ProtectedRoute>
-                <UserProfile />
+                {profileLoading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                <UserProfile profile={profile} />
+                )}
               </ProtectedRoute>
             }
           />
-          {/* Only allow venue managers to access the admin dashboard */}
+
+          {/* Admin routes */}
           <Route
             path="/admin"
             element={
-              <ProtectedRoute>
-                <AdminDashboard /> 
+              <ProtectedRoute requiresManager>
+                {profileLoading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                <AdminDashboard profile={profile} />
+                )} 
               </ProtectedRoute>
             }
           />

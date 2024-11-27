@@ -6,7 +6,6 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
 import { Box, Typography, Tabs, Tab, CircularProgress } from '@mui/material';
 import useUserProfile from '../hooks/useUserProfile';
 import VenueManagement from '../components/VenueManagement';
@@ -23,33 +22,35 @@ import CreateVenueForm from '../components/CreateVenueForm';
  * @component
  * @returns {React.ReactElement} - Admin dashboard for venue management.
  */
-const AdminDashboard: React.FC = () => {
-  const { profile, loading: profileLoading, error } = useUserProfile();
-  const navigate = useNavigate();
-  const location = useLocation();
+const AdminDashboard: React.FC<{ profile: any }> = ({ profile: initialProfile }) => {
+  const { profile: hookProfile, loading: profileLoading, error } = useUserProfile();
+  const [tabIndex, setTabIndex] = useState(0);
+  const activeProfile = initialProfile || hookProfile;
 
-  // get current tab from URL
-  const getCurrentTab = () => {
-    const path = location.pathname.split('/')[2] || 'profile';
-    switch (path) {
-      case 'profile':
-        return 0;
-      case 'manage-venues':
-        return 1;
-      case 'create-venue':
-        return 2;
-      default:
-        return 0;
-    }
-  };
-
-  const [tabIndex, setTabIndex] = useState(getCurrentTab());
-
-  // Add effect to handle auth state
   useEffect(() => {
-    setTabIndex(getCurrentTab());
-  }, [location]);
+    if (activeProfile?.venueManager) {
+      setTabIndex(0);
+    }
+  }, [activeProfile]);
 
+  // Check loading
+  if (profileLoading && !initialProfile) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  // Check error
+  if (error && !initialProfile) {
+    return (
+      <Box sx={{ textAlign: 'center', marginTop: '20px' }}>
+        <Typography variant="h5" color="error" sx={{ textAlign: 'center', marginTop: '20px' }}>Error</Typography>
+        <Typography variant="body1">{error}</Typography>
+      </Box>
+    )
+  }
   /**
    * Handles tab change events
    *
@@ -60,57 +61,16 @@ const AdminDashboard: React.FC = () => {
     setTabIndex(newValue);
   };
 
-  // Protect the component with auth check
-  if (!profile?.venueManager) {
-    return (
-      <Box sx={{ textAlign: 'center', marginTop: '20px' }}>
-        <Typography variant="h5">Access Denied</Typography>
-        <Typography variant="body1">
-          Please log in with a Venue Manager account to view this page.
-        </Typography>
-      </Box>
-    );
-  }
-
-  // handle loading state
-  if (profileLoading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
-  // handle error state
-  if (error) {
-    return (
-      <Box sx={{ textAlign: 'center', marginTop: '20px' }}>
-        <Typography variant="h5" color="error" sx={{ textAlign: 'center', marginTop: '20px' }}>Error</Typography>
-        <Typography variant="body1">{error}</Typography>
-      </Box>
-    );
-  }
-
-  // handle unauthorized access
-  if (!profile?.venueManager) {
-    return (
-      <Box sx={{ textAlign: 'center', marginTop: '20px' }}>
-        <Typography variant="h5">Access Denied</Typography>
-        <Typography variant="body1">Please log in with a Venue Manager account to view this page.</Typography>
-      </Box>
-    );
-  }
-
   const renderTabContent = () => {
     switch (tabIndex) {
       case 0:
-        return <UserProfile />;
+        return <UserProfile profile={activeProfile} />;
       case 1:
         return <VenueManagement />;
       case 2:
         return <CreateVenueForm />;
       default:
-        return <UserProfile />;
+        return <UserProfile profile={activeProfile} />;
     }
   };
 
@@ -127,7 +87,7 @@ const AdminDashboard: React.FC = () => {
       }}
     >
       <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2}}>
-        Welcome, Venue Manager {profile.name}
+        Welcome, Venue Manager {activeProfile?.name}
       </Typography>
 
       {/* Tabs for venue manager */}
@@ -137,11 +97,9 @@ const AdminDashboard: React.FC = () => {
         <Tab label="Create Venue" />
       </Tabs>
 
+      {/* Render components based on selected tab */}
       <Box sx={{ mt: 2 }}>
-        {/* Render components based on selected tab */}
-        <React.Suspense fallback={<CircularProgress />}>
-          {renderTabContent()}
-        </React.Suspense>
+        {renderTabContent()}
       </Box>
     </Box>
   );

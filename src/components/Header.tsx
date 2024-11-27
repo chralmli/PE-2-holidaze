@@ -113,20 +113,6 @@ const Header: React.FC = () => {
                     <Button color="inherit" component={Link} to="/" sx={{ color: 'grey.800', fontWeight: 500, '&:hover': { backgroundColor: 'grey.50', color: 'primary.main' } }}>Home</Button>
                     <Button color="inherit" component={Link} to="/venues" sx={{ color: 'grey.800', fontWeight: 500, '&:hover': { backgroundColor: 'grey.50', color: 'primary.main' } }}>Venues</Button>
                     
-                    {isLoggedIn && user?.venueManager && (
-                        <Button
-                            component={Link}
-                            to="/admin"
-                            sx={{
-                                color: 'grey.800',
-                                fontWeight: 500,
-                                '&:hover': { backgroundColor: 'grey.50', color: 'primary.main' }
-                            }}
-                        >¨
-                            Admin Dashboard
-                        </Button>
-                    )}
-                    
                     <Box sx={{ mx: 1, width: '1px', height: '24px', bgcolor: 'grey.200' }} />
 
                     <Button

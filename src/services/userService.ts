@@ -11,8 +11,13 @@ export const getUserProfile = async (userName: string): Promise<UserProfileRespo
   try {
     const response = await api.get<UserProfileResponse>(`/holidaze/profiles/${userName}?_bookings=true&_venues=true`);
     return response.data; 
-  } catch (error) {
-    console.error('Error fetching user profile:', error);
+  } catch (error: any) {
+    console.error('Detailed error fetching user profile:', {
+      error,
+      status: error.response?.status,
+      message: error.message,
+      response: error.response?.data
+  });
     throw new Error('Failed to fetch user profile');
   }
 };

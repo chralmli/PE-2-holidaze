@@ -14,6 +14,7 @@ const api = axios.create({
     baseURL: import.meta.env.VITE_API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
+        'X-Noroff-API-Key': apiKey,
     },
 });
 
@@ -24,11 +25,12 @@ const api = axios.create({
  */
 api.interceptors.request.use((config) => {
     const storedUser = localStorage.getItem('user');
+    const storedToken = localStorage.getItem('accessToken');
 
-    if (storedUser) {
+    if (storedUser && storedToken) {
             const user = JSON.parse(storedUser);
             if (user.accessToken) {
-                config.headers.Authorization = `Bearer ${user.accessToken}`;
+                config.headers.Authorization = `Bearer ${storedToken}`;
             }
         }
 

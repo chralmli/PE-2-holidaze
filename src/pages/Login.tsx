@@ -1,7 +1,8 @@
 /**
  * Login.tsx
  * 
- * A component for user login. This allows users to enter their email and password credentials and gain access to their account.
+ * A component that handles user authentication and profile data fetching.
+ * It provides a form interface for users to log in using their Noroff student credentials.
  */
 
 import React from 'react';
@@ -12,13 +13,56 @@ import { Link, useNavigate } from 'react-router-dom';
 import { LoginOutlined } from '@mui/icons-material';
 
 /**
+ * Interface representing the expected response structure from the login API endpoint.
+ * @interface LoginResponse
+ * @property {Object} data - The response data object
+ * @property {string} data.name - User's username
+ * @property {string} data.email - User's email address
+ * @property {string} data.accessToken - Authentication token for subsequent API requests
+ * @property {boolean} data.venueManager - User's venue manager status
+ * @property {Object} [data.avatar] - User's avatar information (optional)
+ * @property {string} data.avatar.url - URL of the avatar image
+ * @property {string} data.avatar.alt - Alternative text for the avatar
+ * @property {Object} [data.banner] - User's banner information (optional)
+ * @property {string} data.banner.url - URL of the banner image
+ * @property {string} data.banner.alt - Alternative text for the banner
+ * @property {string} [data.bio] - User's biography (optional)
+ */
+interface LoginResponse {
+    data: {
+        name: string;
+        email: string;
+        accessToken: string;
+        venueManager: boolean;
+        avatar?: { url: string; alt: string };
+        banner?: { url: string; alt: string };
+        bio?: string;
+    };
+}
+
+/**
  * Login Component
  * 
- * A React functional component that renders a login form. Users provide their email and password credentials to authenticate
- * and access their account. After a successful login, the user is redirected to the Venues page.
+ * A React functional component that provides user authentication functionality.
+ * It handles the login process in two steps:
+ * 1. Initial authentication with email/password
+ * 2. Fetching complete profile data including venue manager status
+ * 
+ * Features:
+ * - Email and password validation
+ * - Error handling and user feedback
+ * - Secure token management
+ * - Profile data synchronization
+ * - Responsive design for mobile and desktop
+ * - Keyboard support (Enter key submission)
  * 
  * @component
- * @returns {React.FC} - A login form to authenticate users.
+ * @example
+ * ```tsx
+ * <Login />
+ * ```
+ * 
+ * @returns {React.FC} A login form component with authentication handling
  */
 const Login: React.FC = () => {
     const [email, setEmail] = React.useState('');
@@ -30,31 +74,71 @@ const Login: React.FC = () => {
     /**
      * Handles the user login process.
      * 
-     * Sends a request to the server with user credentials (email and password). If the login is successful,
-     * saves user data using the AuthContext and redirects the user to the venues page.
+     * This function performs a two-step authentication process:
+     * 1. Authenticates user credentials and obtains an access token
+     * 2. Fetches the complete user profile to sync venue manager status and other details
+     * 
+     * The function first logs in with basic credentials, then enhances the user data
+     * with profile information including venue manager status, avatar, and banner.
      * 
      * @async
      * @function
-     * @returns {Promise<void>} - The result of the login process or sets an error if something goes wrong.
+     * @throws {Error} When authentication fails or profile fetch fails
+     * @returns {Promise<void>}
      */
     const handleLogin = async () => {
         try {
-            const response = await api.post('/auth/login', {
+
+            const loginResponse = await api.post<LoginResponse>('/auth/login', {
                 email,
                 password,
             });
 
-            if (response.status === 200) {
-                const { data } = response.data;
-                console.log('User logged in', data);
-                login(data);
-                navigate('/venues')
+            if (loginResponse.data.data) {
+                const loginData = loginResponse.data.data;
+
+                // Set user data first with basic info
+                const initialUserData = {
+                    ...loginData,
+                    venueManager: false,
+                    avatar: loginData.avatar || { url: '', alt: '' },
+                    banner: loginData.banner || { url: '', alt: '' },
+                    bio: loginData.bio || '',
+                };
+
+                login(initialUserData);
+
+                // get profile with the new token
+                try {
+                    const profileResponse = await api.get(`/holidaze/profiles/${loginData.name}`);
+                    
+                    const updatedUserData = {
+                        ...initialUserData,
+                        venueManager: profileResponse.data.data.venueManager === true,
+                        avatar: profileResponse.data.data.avatar || { url: '', alt: '' },
+                        banner: profileResponse.data.data.banner || { url: '', alt: '' },
+                        bio: profileResponse.data.data.bio || '',
+                    };
+
+                    login(updatedUserData);
+                } catch (profileError: any) {
+                    console.error('Error fetching profile', profileError);
+                }
+
+                    navigate('/venues');
             }
-        } catch (error) {
-            setErrorMessage('Invalid email or password. Please try again.');
+        } catch (error: any) {
+            console.error('Login error:', error?.response?.data || error);
+            setErrorMessage(error?.response?.data?.errors?.[0]?.message || 'Failed to login');
         }
     };
 
+    /**
+     * Handles keyboard events for form submission.
+     * Triggers the login process when the Enter key is pressed.
+     * 
+     * @param {React.KeyboardEvent} event - The keyboard event
+     */
     const handleKeyPress = (event: React.KeyboardEvent) => {
         if (event.key === 'Enter') {
             handleLogin();
@@ -138,7 +222,7 @@ const Login: React.FC = () => {
                                 Login
                             </Typography>
                             <Typography variant="body1" color="text.secondary">
-                                Please enter your credentials to coninue
+                                Please enter your credentials to continue
                             </Typography>
                         </Box>
 
