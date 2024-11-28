@@ -14,19 +14,19 @@ const testimonials: Testimonial[] = [
     id: '1',
     name: 'Sarah J.',
     text: "Booking through Holidaze was incredibly easy. I loved the transparent pricing and customer support was fantastic!",
-    avatar: 'https://placekitten.com/100/100',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
   },
   {
     id: '2',
-    name: 'John Doe',
+    name: 'Peter L. Moretti',
     text: "I've been using Holidaze for over a year now and my experience has been amazing. The venues are always great and the prices are affordable!",
-    avatar: 'https://placekitten.com/100/100',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Peter',
   },
   {
     id: '3',
     name: 'Anna S.',
     text: "I had a great experience with Holidaze. The booking process was smooth and the venue was perfect for my event.",
-    avatar: 'https://placekitten.com/100/100',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Anna',
   }
 ];
 

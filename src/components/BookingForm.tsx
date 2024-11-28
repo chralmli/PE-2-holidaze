@@ -18,7 +18,7 @@ interface BookingFormProps {
 dayjs.extend(isSameOrBefore);
 
 const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests }) => {
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
   // Form state

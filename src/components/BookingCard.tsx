@@ -34,7 +34,7 @@ const BookingIdBadge = styled(Box)(({ theme }) => ({
     borderRadius: '0 12px 0 12px',
 }));
 
-const InfoRow = styled(Box)(({ theme }) => ({
+const InfoRow = styled(Box)(({ }) => ({
     display: 'flex',
     alignItems: 'center',
     marginBottom: '8px',

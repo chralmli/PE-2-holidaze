@@ -1,13 +1,12 @@
 import { Alert, Snackbar } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 
 const PostAccommodationRoute: React.FC = () => {
   const { isLoggedIn, user } = useAuth();
   const [showMessage, setShowMessage] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (isLoggedIn && !user?.venueManager) {

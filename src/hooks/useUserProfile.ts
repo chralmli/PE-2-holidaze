@@ -9,7 +9,7 @@ interface UseUserProfileResult {
   error: string | null;
 }
 
-const useUserProfile = () => {
+const useUserProfile = (): UseUserProfileResult => {
   const { user, logout, checkAuthStatus } = useAuth();
   const [profile, setProfile] = useState<UserProfileResponse['data'] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);

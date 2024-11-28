@@ -20,7 +20,6 @@ const VenueList: React.FC<VenueListProps> = ({
   venues = [],
   isLoading = false,
   onHover = () => {},
-  hoveredVenueId = null,
   fetchMode,
   useSlider = false,
  }) => {

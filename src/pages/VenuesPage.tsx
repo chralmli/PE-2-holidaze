@@ -12,21 +12,6 @@ import MapRoundedIcon from '@mui/icons-material/MapRounded';
 import { FilterList as FilterIcon } from '@mui/icons-material';
 import L from 'leaflet';
 
-
-/**
- * Interface for filter state
- * @interface
- */
-interface FilterState {
-  price: string;
-  guests: string;
-  rating: string;
-  wifi: boolean;
-  parking: boolean;
-  breakfast: boolean;
-  pets: boolean;
-}
-
 /**
  * VenuesPage Component
  * Displays a list of venues with filtering, search, and map functionality

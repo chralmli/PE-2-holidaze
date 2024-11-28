@@ -57,7 +57,7 @@ const AdminDashboard: React.FC<{ profile: any }> = ({ profile: initialProfile })
    * @param {React.SyntheticEvent} event - The tab change event.
    * @param {number} newValue - The index of the newly selected tab.
    */
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
   };
 
