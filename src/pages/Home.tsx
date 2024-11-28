@@ -7,6 +7,7 @@
  */
 
 import React, { useEffect, useState, useCallback } from "react";
+import { Helmet } from 'react-helmet-async';
 import { useNavigate } from "react-router-dom";
 import { Box, Typography, Button, Tabs, Tab, Snackbar, Alert, Container, Paper } from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
@@ -231,6 +232,13 @@ const Home: React.FC = () => {
 
     return (
         <>
+            <Helmet>
+                <title>Holidaze - Your Travel Destination Guide</title>
+                <meta name="description" content="Discover new destinations, book unique experiences, and enjoy the best of your travels." />
+                <meta property="og:title" content="Holidaze - Your Travel Destination Guide" />
+                <meta property="og:description" content="Discover new destinations, book unique experiences, and enjoy the best of your travels." />
+                <meta property="og:image" content={backgroundImage} />
+            </Helmet>
             <Box
                 sx={{
                     position: 'relative',

@@ -50,7 +50,9 @@ const Header: React.FC = () => {
         sx={{ 
             backgroundColor: 'white',
             borderBottom: '1px solid',
-            borderColor: 'grey.100'
+            borderColor: 'grey.100',
+            borderRadius: 0,
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
         }}>
         <Toolbar sx={{ width: '100%', margin: '0 auto' }}>
             <Typography 

@@ -1,4 +1,5 @@
 import React,{ useEffect, useState } from "react";
+import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 import { Box, Button, IconButton, Stack, Pagination, Drawer } from '@mui/material';
 import SearchBar from '../components/SearchBar';
@@ -201,200 +202,208 @@ const VenuesPage: React.FC = () => {
     }, []);
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh' }}>
-      {/* Venue Cards Section */}
-      <Box 
-        sx={{ 
-          width: { 
-            xs: '100%',
-            md: '65%',
-            lg: '60%',
-          }, 
-          height: '100vh', 
-          overflowY: 'auto', 
-          padding: {
-            xs: '20px 10px',
-            sm: '20px',
-          },
-          backgroundColor: '#f5f5f5',
-          margin: '0 auto',
-      }}>
-        {/* Search and flter section */}
+    <>
+      <Helmet>
+        <meta property="og:title" content="Explore Stunning Venues with Holidaze - Book Your Perfect Stay" />
+        <meta property="og:description" content="Discover unique venues for your next getaway with Holidaze. Browse a curated list of beautiful accommodations, see their locations on the map, and book your perfect stay effortlessly." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://holidaze-stays.netlify.app/venues" />
+      </Helmet>
+      <Box sx={{ display: 'flex', height: '100vh' }}>
+        {/* Venue Cards Section */}
         <Box 
           sx={{ 
-            display: 'flex',
-            alignItems: 'center',
+            width: { 
+              xs: '100%',
+              md: '65%',
+              lg: '60%',
+            }, 
+            height: '100vh', 
+            overflowY: 'auto', 
+            padding: {
+              xs: '20px 10px',
+              sm: '20px',
+            },
+            backgroundColor: '#f5f5f5',
+            margin: '0 auto',
+        }}>
+          {/* Search and flter section */}
+          <Box 
+            sx={{ 
+              display: 'flex',
+              alignItems: 'center',
+              maxWidth: {
+                xs: '100%',
+                sm: '600px',
+                md: '100%'
+              },
+              gap: 2,
+              mb: 3,
+              px: { xs: 1, sm: 2 },
+              mx: 'auto',
+            }}
+          >
+            <Box sx={{ flex: 1 }}>
+              <SearchBar
+                onSearch={handleSearch}
+                isLoading={isLoading}
+                autoSearch
+                placeholder="Search by name, city, or country..."
+              />
+            </Box>
+            
+            <Button 
+              variant="outlined" 
+              onClick={handleOpenFilterModal}
+              startIcon={<FilterIcon />}
+              sx={{
+                height: '56px',
+                borderRadius: '24px',
+                borderColor: '#34e89e',
+                backgroundColor: 'white',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                mt: 2,
+                width: { xs: '48px', sm: 'auto' },
+                minWidth: { xs: '48px', sm: '100px' },
+                padding: { xs: '0', sm: '0 16px' },
+                '& .MuiButton-startIcon': {
+                  margin: { xs: 0, sm: '0, 8px 0 -4px' },
+                },
+                '&:hover': {
+                  borderColor: '#0f3443',
+                  backgroundColor: '#f5f5f5',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                },
+                '& .MuiSvgIcon-root': {
+                  fonSize: '1.2rem',
+                },
+              }}
+            >
+              <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+                Filters
+              </Box>
+            </Button>
+          </Box>
+          <FilterModal open={filterModalOpen} filterState={filterState} onClose={handleCloseFilterModal} onApply={handleCloseFilterModal} setFilterState={setFilterState} />
+          <Box sx={{
             maxWidth: {
               xs: '100%',
               sm: '600px',
               md: '100%'
             },
-            gap: 2,
-            mb: 3,
-            px: { xs: 1, sm: 2 },
-            mx: 'auto',
-          }}
-        >
-          <Box sx={{ flex: 1 }}>
-            <SearchBar
-              onSearch={handleSearch}
-              isLoading={isLoading}
-              autoSearch
-              placeholder="Search by name, city, or country..."
+            mx: 'auto'
+          }}>
+            <VenueList 
+              venues={filteredVenues.slice((currentPage - 1) * VENUES_PER_PAGE, currentPage * VENUES_PER_PAGE)} 
+              isLoading={isLoading} 
+              onHover={setHoveredVenueId} 
+              hoveredVenueId={hoveredVenueId} 
+              useSlider={false}
             />
           </Box>
+            
           
-          <Button 
-            variant="outlined" 
-            onClick={handleOpenFilterModal}
-            startIcon={<FilterIcon />}
-            sx={{
-              height: '56px',
-              borderRadius: '24px',
-              borderColor: '#34e89e',
-              backgroundColor: 'white',
-              transition: 'all 0.3s ease',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              mt: 2,
-              width: { xs: '48px', sm: 'auto' },
-              minWidth: { xs: '48px', sm: '100px' },
-              padding: { xs: '0', sm: '0 16px' },
-              '& .MuiButton-startIcon': {
-                margin: { xs: 0, sm: '0, 8px 0 -4px' },
-              },
-              '&:hover': {
-                borderColor: '#0f3443',
-                backgroundColor: '#f5f5f5',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-              },
-              '& .MuiSvgIcon-root': {
-                fonSize: '1.2rem',
-              },
-            }}
-          >
-            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-              Filters
-            </Box>
-          </Button>
+          <Stack spacing={2} alignItems="center" mt={4}>
+            <Pagination count={Math.ceil(filteredVenues.length / VENUES_PER_PAGE)} page={currentPage} onChange={handlePageChange} />
+          </Stack>
         </Box>
-        <FilterModal open={filterModalOpen} filterState={filterState} onClose={handleCloseFilterModal} onApply={handleCloseFilterModal} setFilterState={setFilterState} />
-        <Box sx={{
-          maxWidth: {
-            xs: '100%',
-            sm: '600px',
-            md: '100%'
-          },
-          mx: 'auto'
-        }}>
-          <VenueList 
-            venues={filteredVenues.slice((currentPage - 1) * VENUES_PER_PAGE, currentPage * VENUES_PER_PAGE)} 
-            isLoading={isLoading} 
-            onHover={setHoveredVenueId} 
-            hoveredVenueId={hoveredVenueId} 
-            useSlider={false}
-          />
-        </Box>
-          
-        
-        <Stack spacing={2} alignItems="center" mt={4}>
-          <Pagination count={Math.ceil(filteredVenues.length / VENUES_PER_PAGE)} page={currentPage} onChange={handlePageChange} />
-        </Stack>
-      </Box>
 
-      {/* Map Section */}
-      <Box
-        sx={{
-          flex: 1,
-          position: 'sticky',
-          top: 0,
-          width: { 
-            md: '35%', 
-            lg: '40%'
-          },
-          zIndex: 1,
-          display: { xs: 'none', md: 'block' },
-          '& .leaflet-container': {
-            height: '100vh !important',
-            position: 'sticky !important',
-            top: 0,
-            // Ensure map controls are always visible
-            '& .leaflet-control-container': {
-              position: 'fixed',
-              zIndex: 1000,
-            },
-            userSelect: 'none',
-          },
-        }}
-      >
-        <MapSection venues={allVenues} hoveredVenueId={hoveredVenueId} mapLoading={isLoading} onMapUpdate={handleMapUpdate} />
-      </Box>
-
-      {/* Sticky section at the bottom of the page on small screens */}
-      {isSmallScreen && (
+        {/* Map Section */}
         <Box
           sx={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            width: '100%',
-            padding: '8px 20px',
-            bgcolor: 'background.paper',
-            boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.1)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            gap: 2,
-            zIndex: 1300,
-          }}
-        >
-          <IconButton 
-            color="secondary" 
-            onClick={() => setMapDrawerOpen(true)}
-            sx={{
-              height: '40px',
-              width: '40px',
-              px: 2,
-              fontSize: '0.875rem',
-              backgroundColor: '#34e89e',
-              color: 'white',
-              '&:hover': {
-                backgroundColor: '#0f3443',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-              },
-            }}
-            >
-            <MapRoundedIcon />
-          </IconButton>
-        </Box>
-      )}
-
-      {/* Map Drawer for small screens */}
-      <Drawer
-        anchor="bottom"
-        open={mapDrawerOpen}
-        onClose={() => setMapDrawerOpen(false)}
-        sx={{
-          '& .MuiDrawer-paper': {
-            height: '60vh',
-            width: '100%',
+            flex: 1,
+            position: 'sticky',
+            top: 0,
+            width: { 
+              md: '35%', 
+              lg: '40%'
+            },
+            zIndex: 1,
+            display: { xs: 'none', md: 'block' },
             '& .leaflet-container': {
-              height: '100% !important',
-              // Ensure map controls are visible in drawer
+              height: '100vh !important',
+              position: 'sticky !important',
+              top: 0,
+              // Ensure map controls are always visible
               '& .leaflet-control-container': {
-                position: 'absolute',
+                position: 'fixed',
                 zIndex: 1000,
               },
+              userSelect: 'none',
             },
-          },
-        }}
-      >
-        <MapSection venues={allVenues} hoveredVenueId={hoveredVenueId} mapLoading={isLoading} onMapUpdate={handleMapUpdate} />
-      </Drawer>
-    </Box>
+          }}
+        >
+          <MapSection venues={allVenues} hoveredVenueId={hoveredVenueId} mapLoading={isLoading} onMapUpdate={handleMapUpdate} />
+        </Box>
+
+        {/* Sticky section at the bottom of the page on small screens */}
+        {isSmallScreen && (
+          <Box
+            sx={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              width: '100%',
+              padding: '8px 20px',
+              bgcolor: 'background.paper',
+              boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.1)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: 2,
+              zIndex: 1300,
+            }}
+          >
+            <IconButton 
+              color="secondary" 
+              onClick={() => setMapDrawerOpen(true)}
+              sx={{
+                height: '40px',
+                width: '40px',
+                px: 2,
+                fontSize: '0.875rem',
+                backgroundColor: '#34e89e',
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: '#0f3443',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                },
+              }}
+              >
+              <MapRoundedIcon />
+            </IconButton>
+          </Box>
+        )}
+
+        {/* Map Drawer for small screens */}
+        <Drawer
+          anchor="bottom"
+          open={mapDrawerOpen}
+          onClose={() => setMapDrawerOpen(false)}
+          sx={{
+            '& .MuiDrawer-paper': {
+              height: '60vh',
+              width: '100%',
+              '& .leaflet-container': {
+                height: '100% !important',
+                // Ensure map controls are visible in drawer
+                '& .leaflet-control-container': {
+                  position: 'absolute',
+                  zIndex: 1000,
+                },
+              },
+            },
+          }}
+        >
+          <MapSection venues={allVenues} hoveredVenueId={hoveredVenueId} mapLoading={isLoading} onMapUpdate={handleMapUpdate} />
+        </Drawer>
+      </Box>
+    </>
   );
 };
 
