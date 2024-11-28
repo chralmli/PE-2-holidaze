@@ -50,16 +50,28 @@ const Register: React.FC = () => {
         setSuccess(null);
 
         // Basic validation
+        if (!name) {
+            setError('Username is required');
+            return;
+        }
+        if (name.length > 20) {
+            setError('Username cannot be longer than 20 characters');
+            return;
+        }
+        if (!email) {
+            setError('Email must be a valid stud.noroff.no address');
+            return;
+        }
         if (!email.endsWith('@stud.noroff.no')) {
-            setError('Email must be a valid stud.noroff.no address.');
+            setError('Email must be a valid stud.noroff.no address');
             return;
         }
-        if (password.length < 8) {
-            setError('Password must be at least 8 characters long.');
+        if (!name || name.includes(' ') || /[^\w]/.test(name)) {
+            setError('Username can only contain letters, numbers, and underscores');
             return;
         }
-        if (name.includes(' ')) {
-            setError('Name cannot contain spaces or punctuation symbols apart from underscore(_).');
+        if (!password || password.length < 8) {
+            setError('Password must be at least 8 characters long');
             return;
         }
 
@@ -74,12 +86,16 @@ const Register: React.FC = () => {
         };
 
         try {
-            const response = await api.post('/auth/register', userData);
+            await api.post('/auth/register', userData);
             setSuccess(`Registration successful! You can now log in with your email: ${email}`);
-            navigate('/login');
+
+            setTimeout(() => {
+                navigate('/login');
+            }, 1000);
         } catch (error: any) {
-            setError(error.response?.data?.message || 'An error occurred during registration.')
-            console.error('Error registering:', error.response?.data?.message);
+            const errorMessage = error.response?.data?.errors?.[0]?.message || 'An error occurred during registration.';
+            setError(errorMessage);
+            console.error('Error registering:', error);
         }
     };
 
@@ -158,7 +174,13 @@ const Register: React.FC = () => {
                         {error && 
                             <Alert 
                                 severity="error" 
-                                sx={{ mb: 3, borderRadius: '12px' }}
+                                sx={{ 
+                                    mb: 3, 
+                                    borderRadius: '12px',
+                                    '& .MuiAlert-message': {
+                                        width: '100%',
+                                    } 
+                                }}
                                 data-testid="register-error"
                             >
                                 {error}
@@ -196,10 +218,10 @@ const Register: React.FC = () => {
                                     label="Email"
                                     fullWidth
                                     value={email}
-                                    name="email"
                                     onChange={(e) => setEmail(e.target.value)}
                                     data-testid="register-email"
                                     helperText="Must be a valid stud.noroff.no address"
+                                    name="email"
                                 />
                             </Grid>
                             <Grid item xs={12}>
@@ -208,10 +230,10 @@ const Register: React.FC = () => {
                                     type="password"
                                     fullWidth
                                     value={password}
-                                    name="password"
                                     onChange={(e) => setPassword(e.target.value)}
                                     data-testid="register-password"
                                     helperText="Must be at least 8 characters long"
+                                    name="password"
                                 />
                             </Grid>
 

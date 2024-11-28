@@ -1,0 +1,56 @@
+name: Cypress Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  cypress-run:
+    name: Cypress Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+        # Create env file with correct variable name
+      - name: Create env file
+        run: |
+          echo "VITE_API_KEY=${{ secrets.VITE_API_KEY }}" > .env
+          echo "VITE_API_BASE_URL=https://v2.api.noroff.dev" >> .env
+
+      # Install start-server-and-test if not already in dependencies
+      - name: Install start-server-and-test
+        run: npm install --save-dev start-server-and-test
+
+      # Run the tests using your existing script
+      - name: Run Cypress Tests
+        run: npm run test:e2e
+        env:
+          VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
+
+      # upload test artifacts
+      - name: Upload Cypress Screenshots
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: Cypress screenshots
+          path: cypress/screenshots/
+      
+      - name: Upload Cypress Videos
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: cypress-videos
+          path: cypress/videos

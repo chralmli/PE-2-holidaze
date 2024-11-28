@@ -8,19 +8,41 @@ declare namespace Cypress {
 
 // Register command
 Cypress.Commands.add('register', (username: string, email: string, password: string) => {
-  cy.visit('/register');
-  cy.get('[data-testid="register-username"]').type(username);
-  cy.get('[data-testid="register-email"]').type(email);
-  cy.get('[data-testid="register-password"]').type(password);
-  cy.get('[data-testid="register-submit"]').click();
+  cy.request({
+    method: 'POST',
+    url: 'https://v2.api.noroff.dev/auth/register',
+    body: {
+      name: username,
+      email: email,
+      password: password
+    },
+    headers: {
+      'X-Noroff-ApiKey': Cypress.env('VITE_API_KEY')
+    }
+  }).then((response) => {
+    expect(response.status).to.eq(201);
+  });
 });
 
 // Login command
 Cypress.Commands.add('login', (email: string, password: string) => {
-  cy.visit('/login');
-  cy.get('[data-testid="login-email"]').type(email);
-  cy.get('[data-testid="login-password"]').type(password);
-  cy.get('[data-testid="login-submit"]').click();
+  cy.request({
+    method: 'POST',
+    url: 'https://v2.api.noroff.dev/auth/login',
+    body: {
+      email: email,
+      password: password
+    },
+    headers: {
+      'X-Noroff-ApiKey': Cypress.env('VITE_API_KEY')
+    }
+  }).then((response) => {
+    expect(response.status).to.eq(200);
+    window.localStorage.setItem('accessToken', response.body.data.accessToken);
+    window.localStorage.setItem('user', JSON.stringify(response.body.data));
+  });
+
+  cy.visit('/venues');
 });
 
 // Book venue command
