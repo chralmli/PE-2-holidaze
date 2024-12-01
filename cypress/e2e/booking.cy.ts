@@ -155,11 +155,10 @@ describe('Booking Process', () => {
     cy.intercept('POST', '**/holidaze/bookings').as('createBooking');
 
     cy.visit(`/venue/${testVenueId}`);
-
-    cy.wait(2000);
+    cy.wait(3000);
 
     // Wait for <the form to be visible first
-    cy.get('[data-testid="booking-form"]', { timeout: 10000 })
+    cy.get('[data-testid="booking-form"]')
       .scrollIntoView()
       .should('be.visible')
       .should('exist')
