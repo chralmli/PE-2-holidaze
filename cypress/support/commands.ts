@@ -34,7 +34,7 @@ Cypress.Commands.add('login', (email: string, password: string) => {
       password: password
     },
     headers: {
-      'X-Noroff-ApiKey': Cypress.env('VITE_API_KEY')
+      'X-Noroff-API-Key': Cypress.env('VITE_API_KEY')
     }
   }).then((response) => {
     expect(response.status).to.eq(200);

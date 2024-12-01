@@ -72,23 +72,62 @@ export const createBooking = async (bookingData: BookingRequest): Promise<Bookin
     // Validate the bookingData before making the request
     const { dateFrom, dateTo, guests } = bookingData;
 
-    const from = new Date(dateFrom);
-    const to = new Date(dateTo);
+    try {
+        const from = new Date(dateFrom);
+        const to = new Date(dateTo);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-    // ensure that dateFrom is before dateTo
-    if (to < from) {
-        throw new Error('The end date must be after the start date');
+        // Check for invalid dates
+        if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+            throw new Error('Invalid date format. Please use YYYY-MM-DD');
+        }
+
+        // Check for past dates
+        if (from < today) {
+            throw new Error('Cannot book dates in the past');
+        }
+
+        // Check date order
+        if (to < from) {
+            throw new Error('The end date must be after the start date');
+        }
+
+        // Check guests
+        if (guests <= 0) {
+            throw new Error('Number of guests must be greater than 0');
+        }
+    } catch (validationError: any) {
+        console.error('Booking validation failed:', validationError.message);
+        throw validationError;
     }
 
-    // ensure guests are greater than 0
-    if (guests <= 0) {
-        throw new Error('Number of guests must be greater than 0');
-    }
+    // API request
     try {
         const response = await api.post<{data: BookingResponse }>(`/holidaze/bookings`, bookingData);
         return response.data.data;
     } catch (error: any) {
         console.error('Failed to create booking', error.response?.data || error.message);
-        throw new Error('Failed to create booking');
+
+        // Handle specific API error responses
+        if (error.response) {
+            switch (error.response.status) {
+                case 400:
+                    throw new Error(error.response.data?.errors?.[0]?.message || 'Invalid booking data');
+                case 401:
+                    throw new Error('Please log in to make a booking');
+                case 403:
+                    throw new Error('You are not authorized to make a booking');
+                case 409:
+                    throw new Error('These dates are no longer available. Please choose different dates');
+                case 422:
+                    throw new Error('The venue cannot accommodate this many guests');
+                default:
+                    throw new Error('Failed to create booking. Please try again');
+            }
+        }
+
+        // Handle network or other errors
+        throw new Error('Network error. Please check your connection and try again.');
     }
 };

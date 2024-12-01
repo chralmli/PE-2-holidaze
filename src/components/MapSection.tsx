@@ -10,7 +10,7 @@ interface MapSectionProps {
   venues: Venue[];
   hoveredVenueId: string | null;
   mapLoading: boolean;
-  onMapUpdate?: (bounds: L.LatLngBounds) => void;
+  onMapUpdate?: (bounds: L.LatLngBounds, center: L.LatLng, zoom: number) => void;
 }
 
 const StyledMapOverlay = styled(Box)(({ theme }) => ({
@@ -51,26 +51,41 @@ const createMarkerIcon = (price: number, isHovered: boolean): DivIcon => {
   });
 };
 
-const MapEventsHandler: React.FC<{ onMapUpdate?: (bounds: L.LatLngBounds) => void}> = ({
+const MapEventsHandler: React.FC<{ onMapUpdate?: (bounds: L.LatLngBounds, center: L.LatLng, zoom: number) => void}> = ({
   onMapUpdate
 }) => {
   const map = useMap();
+  const [debounceTimeout, setDebounceTimeout] = React.useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!map || !onMapUpdate) return;
 
     const handleMapChange = () => {
-      onMapUpdate(map.getBounds());
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
+
+      const timeout = setTimeout(() => {
+        onMapUpdate(map.getBounds(), map.getCenter(), map.getZoom());
+      }, 300);
+
+      setDebounceTimeout(timeout);
     };
 
     map.on('moveend', handleMapChange);
     map.on('zoomend', handleMapChange);
 
+    // Initial map state
+    onMapUpdate(map.getBounds(), map.getCenter(), map.getZoom());
+
     return () => {
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
       map.off('moveend', handleMapChange);
       map.off('zoomend', handleMapChange);
     };
-  }, [map, onMapUpdate]);
+  }, [map, onMapUpdate, debounceTimeout]);
 
   return null;
 };

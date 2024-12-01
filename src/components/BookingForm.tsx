@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Button, TextField, Typography, Alert, Skeleton } from '@mui/material';
+import { Box, Button, TextField, Typography, Alert, Skeleton, TextFieldProps } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
@@ -187,7 +187,13 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests }) => {
             disablePast
             shouldDisableDate={disableDate}
             sx={{ flex: 1, minWidth: '200px' }}
-            data-testid="date-from"
+            slotProps={{
+              textField: {
+                inputProps: {
+                  'data-testid': 'date-from-input',
+                }
+              } as TextFieldProps
+            }}
           />
 
           <DatePicker
@@ -198,7 +204,13 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests }) => {
             minDate={dateFrom || undefined}
             shouldDisableDate={disableDate}
             sx={{ flex: 1, minWidth: '200px' }}
-            data-testid="date-to"
+            slotProps={{
+              textField: {
+                inputProps: {
+                  'data-testid': 'date-to-input',
+                }
+              } as TextFieldProps
+            }}
           />
         </Box>
 
@@ -213,7 +225,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests }) => {
           inputProps={{ 
             min: 0, 
             max: maxGuests,
-            'data-testid': 'guests',
+            'data-testid': 'guests-input',
             onKeyDown: (e) => { 
               if (e.key === 'e' || e.key === '-' || e.key === '+') { 
                 e.preventDefault(); 
@@ -231,7 +243,7 @@ const BookingForm: React.FC<BookingFormProps> = ({ venueId, maxGuests }) => {
         )}
 
         {successMessage && (
-          <Alert severity="success" onClose={() => setSuccessMessage(null)} data-testid="bookings-success">
+          <Alert severity="success" onClose={() => setSuccessMessage(null)} data-testid="booking-success">
             <Typography color="primary">{successMessage}</Typography>
           </Alert>
         )}

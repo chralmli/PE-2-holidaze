@@ -1,4 +1,4 @@
-import React,{ useEffect, useState } from "react";
+import React,{ useEffect, useState, useMemo, useCallback } from "react";
 import { Helmet } from 'react-helmet-async';
 import { useLocation } from 'react-router-dom';
 import { Box, Button, IconButton, Stack, Pagination, Drawer } from '@mui/material';
@@ -32,6 +32,16 @@ const VenuesPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isSmallScreen, setIsSmallScreen] = useState<boolean>(window.innerWidth < 768);
   const [mapDrawerOpen, setMapDrawerOpen] = useState<boolean>(false);
+  const [mapState, setMapState] = useState<{
+    bounds: L.LatLngBounds | null;
+    center: L.LatLng | null;
+    zoom: Number;
+  }>({
+    bounds: null,
+    center: null,
+    zoom: 5,
+  });
+  const [isMapLoading, setIsMapLoading] = useState<boolean>(true);
   const { search } = useLocation();
   const params = new URLSearchParams(search);
   const [filterState, setFilterState] = useState({
@@ -119,19 +129,23 @@ const VenuesPage: React.FC = () => {
   };
 
   // filter the venues according to filter settings
-  const filteredVenues = isLoading ? [] : venuesInView.filter((venue) => {
-    return (
-      venue.name.toLowerCase().includes('') &&
-      (filterState.price === 'any' || venue.price <= Number(filterState.price)) &&
-      (filterState.guests === 'any' || venue.maxGuests >= Number(filterState.guests)) &&
-      (filterState.rating === 'any' || (venue.rating ?? 0) >= Number(filterState.rating)) &&
-      (!filterState.wifi ||  venue.meta?.wifi) &&
-      (!filterState.parking || venue.meta?.parking) &&
-      (!filterState.breakfast || venue.meta?.breakfast) &&
-      (!filterState.pets || venue.meta?.pets)
-    );
-  });
+  const filteredVenues = useMemo(() => {
+    if (isLoading) return [];
+    return venuesInView.filter((venue) => {
+      const matchesSearch = venue.name.toLowerCase().includes('');
+      const matchesPrice = filterState.price === 'any' || venue.price <= Number(filterState.price);
+      const matchesGuests = filterState.guests === 'any' || venue.maxGuests >= Number(filterState.guests);
+      const matchesRating = filterState.rating === 'any' || (venue.rating ?? 0) >= Number(filterState.rating);
+      const matchesFacilities = (
+        (!filterState.wifi || venue.meta?.wifi) &&
+        (!filterState.parking || venue.meta?.parking) &&
+        (!filterState.breakfast || venue.meta?.breakfast) &&
+        (!filterState.pets || venue.meta?.pets)
+      );
 
+      return matchesSearch && matchesPrice && matchesGuests && matchesRating && matchesFacilities;
+    });
+  }, [venuesInView, filterState, isLoading]);
 
   /**
    * Handles pagination page changes
@@ -151,22 +165,61 @@ const VenuesPage: React.FC = () => {
    * Called when map is panned or zoomed
    * @param {L.LatLngBounds} bounds - Current map bounds
    */
-  const handleMapUpdate = (bounds: L.LatLngBounds) => {
+  const handleMapUpdate = useCallback(async (
+    bounds: L.LatLngBounds,
+    center: L.LatLng,
+    zoom: number
+  ) => {
     if (!bounds) return;
 
-    setIsLoading(true);
+    setMapState({ bounds, center, zoom });
+    setIsMapLoading(true);
 
-    const venuesInBounds = allVenues.filter(
-      (venue) =>
-        venue.location &&
-      typeof venue.location.lat === 'number' &&
-      typeof venue.location.lng === 'number' &&
-      bounds.contains([venue.location.lat, venue.location.lng])
-    );
+    try {
+      if (zoom >= 5) {
+        const venuesInBounds = allVenues.filter(venue => {
+          if (!venue.location?.lat || !venue.location?.lng) return false;
 
-    setVenuesInView(venuesInBounds);
-    setIsLoading(false);
-  };
+          const isInBounds = bounds.contains([venue.location.lat, venue.location.lng]);
+          const isWithinDistance = true;
+
+          return isInBounds && isWithinDistance;
+        });
+
+        setVenuesInView(venuesInBounds);
+      } else {
+        setVenuesInView(allVenues);
+      }
+    } catch (error) {
+      console.error('Error updating venues based on map:', error);
+    } finally {
+      setIsMapLoading(false);
+    }
+  }, [allVenues]);
+
+  // Effect to handle initial venue loading
+  useEffect(() => {
+    const loadVenues = async () => {
+      setIsLoading(true);
+      try {
+        const response = await getAllVenues(1, VENUES_PER_PAGE * 10, { _owner: true, _bookings: true });
+
+        // Filer out venues without valid coordinates
+        const validVenues = response.data.filter(
+          venue => venue.location?.lat && venue.location?.lng
+        );
+
+        setAllVenues(validVenues);
+        setVenuesInView(validVenues);
+      } catch (error) {
+        console.error('Error fetching venues:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadVenues();
+  }, []);
 
     //  useEffect to prevent scroll on map container
     useEffect(() => {

@@ -49,7 +49,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, showBookingId = fals
     const formatDate = (date: string) => dayjs(date).format('DD MMM YYYY');
 
     return (
-        <StyledCard variant="outlined">
+        <StyledCard variant="outlined" data-testid="booking-card">
             {showBookingId && (
                 <BookingIdBadge>
                     <Typography variant="caption" fontWeight="medium">
