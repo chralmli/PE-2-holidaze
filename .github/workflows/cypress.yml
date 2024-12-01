@@ -30,8 +30,20 @@ jobs:
           echo "VITE_API_KEY=${{ secrets.VITE_API_KEY }}" > .env
           echo "VITE_API_BASE_URL=https://v2.api.noroff.dev" >> .env
 
+      - name: Build Project
+        run: npm run build
+
       # Install start-server-and-test if not already in dependencies
-      - name: Install start-server-and-test
+      - name: Start app and run tests
+        uses: cypress-io/github-action@v6
+        with:
+          start: npm run dev
+          wait-on: 'http://localhost:5173'
+          wait-on-timeout: 120
+          browser: chrome
+          config-file: cypress.config.ts
+        env:
+          VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
         run: npm install --save-dev start-server-and-test
 
       # Run the tests using your existing script
@@ -40,17 +52,10 @@ jobs:
         env:
           VITE_API_KEY: ${{ secrets.VITE_API_KEY }}
 
-      # upload test artifacts
-      - name: Upload Cypress Screenshots
+      # upload screenshots if tests fail
+      - name: Upload Screenshots
         uses: actions/upload-artifact@v3
         if: failure()
         with:
-          name: Cypress screenshots
+          name: cypress-screenshots
           path: cypress/screenshots/
-      
-      - name: Upload Cypress Videos
-        uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: cypress-videos
-          path: cypress/videos

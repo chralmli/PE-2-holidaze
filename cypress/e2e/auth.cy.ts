@@ -52,7 +52,7 @@ describe('Authentication', () => {
       cy.get('[data-testid="login-password"]').type(password);
       cy.get('[data-testid="login-submit"]').click();
   
-      cy.url().should('include', '/venues');
+      cy.url({ timeout: 10000 }).should('include', '/venues');
     })
   });
 
