@@ -1,0 +1,63 @@
+/* Fix overflow issues */
+.slick-slider {
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Adjust arrow positioning */
+.slick-prev,
+.slick-next {
+  width: 30px !important;
+  height: 30px !important;
+  z-index: 1 !important;
+}
+
+/* .slick-prev {
+  left: 16px !important;
+}
+
+.slick-next {
+  right: 16px !important;
+} */
+
+/* Make sure arrows don't cause overflow */
+.slick-list {
+  margin: 0 -16px !important;
+  overflow: visible !important;
+}
+
+/* Ensure slides don't cause overflow */
+.slick-track {
+  display: flex !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Fix any potential gap issues */
+.slick-slide {
+  height: auto !important;
+}
+
+.slick-slide > div {
+  height: 100% !important;
+  padding: 0 16px !important;
+}
+
+.slick-arrow {
+  width: 40px !important;
+  height: 40px !important;
+  z-index: 2 !important;
+  background: rgba(75, 228, 136, 0.8) !important;
+  transition: background 0.3s !important;
+  border-radius: 50% !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.slick-arrow:hover {
+  background: rgba(104, 228, 154, 0.8) !important;
+}
+
+.slick-dots {
+  bottom: -30px !important;
+}

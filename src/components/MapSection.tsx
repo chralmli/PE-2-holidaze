@@ -10,6 +10,12 @@ interface MapSectionProps {
   venues: Venue[];
   hoveredVenueId: string | null;
   mapLoading: boolean;
+  mapState?: {
+    bounds: L.LatLngBounds | null;
+    center: L.LatLng | null;
+    zoom: Number;
+  };
+  isMapLoading?: boolean;
   onMapUpdate?: (bounds: L.LatLngBounds, center: L.LatLng, zoom: number) => void;
 }
 

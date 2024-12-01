@@ -375,7 +375,7 @@ const VenuesPage: React.FC = () => {
             },
           }}
         >
-          <MapSection venues={allVenues} hoveredVenueId={hoveredVenueId} mapLoading={isLoading} onMapUpdate={handleMapUpdate} />
+          <MapSection venues={allVenues} hoveredVenueId={hoveredVenueId} mapLoading={isLoading} mapState={mapState} isMapLoading={isMapLoading} onMapUpdate={handleMapUpdate} />
         </Box>
 
         {/* Sticky section at the bottom of the page on small screens */}

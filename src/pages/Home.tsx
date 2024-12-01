@@ -425,8 +425,8 @@ const Home: React.FC = () => {
                         },
                     }}
                 >
-                    <Tab label="Most popular venues" />
-                    <Tab label="Best rated venues" />
+                    <Tab label="Most popular" />
+                    <Tab label="Best rated" />
                 </Tabs>
 
                 <Box sx={{ mt: 4 }}>

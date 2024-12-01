@@ -25,7 +25,7 @@ describe('Authentication', () => {
     cy.get('button[type="submit"]').click();
 
     // Wait for the registration response and check URL and message
-    cy.get('[data-testid="register-success"]', { timeout: 4000 }).should('be.visible');
+    cy.get('[data-testid="register-success"]', { timeout: 10000 }).should('be.visible');
     cy.url().should('include', '/login')
   });
 
@@ -39,20 +39,22 @@ describe('Authentication', () => {
       method: 'POST',
       url: 'https://v2.api.noroff.dev/auth/register',
       headers: {
-        'X-Noroff-ApiKey': Cypress.env('NOROFF_API_KEY')
+        'X-Noroff-API-Key': Cypress.env('VITE_API_KEY')
       },
       body: {
         name: username,
         email: email,
         password: password
       },
-    }).then(() => {
+    }).then((response) => {
+      expect(response.status).to.eq(201);
+
       cy.visit('/login');
       cy.get('[data-testid="login-email"]').type(email);
       cy.get('[data-testid="login-password"]').type(password);
       cy.get('[data-testid="login-submit"]').click();
   
-      cy.url().should('include', '/venues');
+      cy.url({ timeout: 10000 }).should('include', '/venues');
     })
   });
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { CssBaseline, GlobalStyles, Alert, Snackbar, Box, CircularProgress } from '@mui/material';
+import '../src/assets/styles/SlickOverrides.css';
 import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Footer from './components/Footer';

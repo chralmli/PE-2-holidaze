@@ -155,14 +155,19 @@ describe('Booking Process', () => {
     cy.intercept('POST', '**/holidaze/bookings').as('createBooking');
 
     cy.visit(`/venue/${testVenueId}`);
+    cy.wait(3000);
 
     // Wait for <the form to be visible first
-    cy.get('[data-testid="booking-form"]', { timeout: 10000 }).scrollIntoView().should('be.visible');
+    cy.get('[data-testid="booking-form"]')
+      .scrollIntoView()
+      .should('be.visible')
+      .should('exist')
+      .within(() => {
+        cy.get('input[data-testid="date-from-input"]').type(availableStartDate, { delay: 100});
+        cy.get('input[data-testid="date-to-input"]').type(availableEndDate, { delay: 100});
+        cy.get('input[data-testid="guests-input"]').clear().type('2');
+      })
 
-    // Fill booking form
-    cy.get('input[data-testid="date-from-input"]').type(availableStartDate, { delay: 100});
-    cy.get('input[data-testid="date-to-input"]').type(availableEndDate, { delay: 100});
-    cy.get('input[data-testid="guests-input"]').clear().type('2');
     cy.wait(500);
     cy.get('[data-testid="submit-booking"]').click();
 
@@ -243,7 +248,7 @@ describe('Booking Process', () => {
   it('should show my bookings in profile', () => {
     cy.wait(2000);
     cy.visit('/profile');
-    
+
     cy.wait(2000);
 
     cy.get('[data-testid="booking-card"]')
