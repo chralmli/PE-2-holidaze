@@ -6,6 +6,7 @@ import api from '../services/api';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
+import '../assets/styles/SlickOverrides.css';
 
 interface VenueListProps {
   venues: Venue[];
@@ -69,7 +70,7 @@ const VenueList: React.FC<VenueListProps> = ({
   // if loading, display a loading spinner
   if (fetchingVenues || isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '38vh' }}>
         <CircularProgress />
       </Box>
     );
@@ -112,13 +113,49 @@ const VenueList: React.FC<VenueListProps> = ({
   // If the slider is needed, wrap the venue cards in a slider component
   if (useSlider) {
     return (
-      <Slider {...sliderSettings}>
-        {displayVenues.map((venue) => (
-          <Box key={venue.id} px={2}>
-            <VenueCard venue={venue} />
-          </Box>
-        ))}
-      </Slider>
+      <Box
+        sx={{
+          width: '100%',
+          px: 4,
+          position: 'relative',
+          overflow: 'hidden',
+          '.slick-slider': {
+            position: 'relative',
+            mx: -2,
+            '.slick-list': {
+              overflow: 'visible',
+            },
+            '.slick-prev': {
+              left: 0,
+            },
+            '.slick-next': {
+              right: 0,
+            },
+            'slick-track': {
+              display: 'flex',
+              '.slick-slide': {
+                px: 2,
+                height: 'auto',
+                '& > div': {
+                  height: '100%',
+                  padding: '0 16px',
+                },
+              },
+            },
+            '.slick-arrow': {
+              zIndex: 2
+            },
+          },
+        }}
+      >
+        <Slider {...sliderSettings}>
+          {displayVenues.map((venue) => (
+            <Box key={venue.id} px={2}>
+              <VenueCard venue={venue} />
+            </Box>
+          ))}
+        </Slider>
+      </Box>
     );
   }
 
