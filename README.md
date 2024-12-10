@@ -1,5 +1,7 @@
 # Holidaze - Accommodation Booking Application
 
+![Holidaze Screenshot](/src/assets/media/holidaze-mockup.png)
+
 Holidaze is a modern, accommodation booking application that allows users to search for venues, view available dates, make bookings, and manage accommodation venues. This project represents the final exam for the two-year front-end development course and showcases both the visual design and technical skills learned throughout the course.
 
 ## Table of Contents
